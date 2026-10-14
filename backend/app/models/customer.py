@@ -37,3 +37,4 @@ class CustomerProfile(Base):
 
     # Relationships
     user = relationship("User", back_populates="customer_profile")
+    orders = relationship("Order", back_populates="customer", cascade="all, delete-orphan")

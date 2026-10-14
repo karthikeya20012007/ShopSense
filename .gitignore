@@ -57,3 +57,8 @@ dist-ssr/
 .pytest_cache/
 .coverage
 htmlcov/
+
+
+# Personal project notes — keep local, do not push
+/Shopsense.txt
+/steps.txt

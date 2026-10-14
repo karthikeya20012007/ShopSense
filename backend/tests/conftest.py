@@ -36,7 +36,10 @@ def db_session() -> Generator[Session, None, None]:
     """Provide a clean database session per test with teardown."""
     connection = test_engine.connect()
     transaction = connection.begin()
-    session = TestingSessionLocal(bind=connection)
+    session = TestingSessionLocal(
+        bind=connection,
+        join_transaction_mode="create_savepoint"
+    )
 
     yield session
 

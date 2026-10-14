@@ -1,4 +1,8 @@
+import concurrent.futures
+from unittest.mock import patch
 from datetime import datetime, timedelta, timezone
+import pytest
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 from sqlalchemy import select
@@ -10,6 +14,10 @@ from backend.app.models.vendor import VendorProfile
 from backend.app.models.customer import CustomerProfile
 from backend.app.models.refresh_token import RefreshTokenSession
 from backend.app.models.enums import UserRole, AccountStatus, VendorStatus
+from backend.app.schemas.customer import CustomerRegisterRequest
+from backend.app.schemas.vendor import VendorRegisterRequest
+from backend.app.services.auth_service import register_customer, register_vendor
+from backend.tests.conftest import TestingSessionLocal
 
 
 def test_customer_registration_success(client: TestClient, db_session: Session):
@@ -82,6 +90,181 @@ def test_duplicate_email_registration_fails(client: TestClient):
     res2 = client.post("/api/v1/auth/register/customer", json=payload)
     assert res2.status_code == 409
     assert "already exists" in res2.json()["detail"]
+
+
+def test_vendor_duplicate_email_registration_fails(client: TestClient):
+    payload = {
+        "email": "vendor_dup@example.com",
+        "password": "Password123!",
+        "full_name": "Vendor One",
+        "store_name": "Store Alpha"
+    }
+    res1 = client.post("/api/v1/auth/register/vendor", json=payload)
+    assert res1.status_code == 201
+
+    # Second vendor registration with same email
+    res2 = client.post("/api/v1/auth/register/vendor", json=payload)
+    assert res2.status_code == 409
+    assert "already exists" in res2.json()["detail"]
+
+
+def test_customer_registration_race_integrity_error_handled(db_session: Session):
+    """Simulate a race condition where the select-check misses an inflight insert, causing IntegrityError."""
+    req = CustomerRegisterRequest(
+        email="race_cust@example.com",
+        password="Password123!",
+        full_name="Original Cust"
+    )
+    register_customer(db_session, req)
+
+    req2 = CustomerRegisterRequest(
+        email="race_cust@example.com",
+        password="Password456!",
+        full_name="Racer Cust"
+    )
+
+    original_execute = db_session.execute
+
+    def mock_execute(statement, *args, **kwargs):
+        # If this is the SELECT check for existing user, pretend no user was found
+        if "FROM users" in str(statement) and "WHERE users.email =" in str(statement):
+            class EmptyResult:
+                def scalar_one_or_none(self):
+                    return None
+            return EmptyResult()
+        return original_execute(statement, *args, **kwargs)
+
+    with patch.object(db_session, "execute", side_effect=mock_execute):
+        with pytest.raises(HTTPException) as exc_info:
+            register_customer(db_session, req2)
+        assert exc_info.value.status_code == 409
+        assert "already exists" in exc_info.value.detail
+
+
+def test_vendor_registration_race_integrity_error_handled(db_session: Session):
+    """Simulate vendor registration race condition where IntegrityError is caught and converted to 409."""
+    req = VendorRegisterRequest(
+        email="race_vendor@example.com",
+        password="Password123!",
+        full_name="Original Vendor",
+        store_name="Store Race One"
+    )
+    register_vendor(db_session, req)
+
+    req2 = VendorRegisterRequest(
+        email="race_vendor@example.com",
+        password="Password456!",
+        full_name="Racer Vendor",
+        store_name="Store Race Two"
+    )
+
+    original_execute = db_session.execute
+
+    def mock_execute(statement, *args, **kwargs):
+        if "FROM users" in str(statement) and "WHERE users.email =" in str(statement):
+            class EmptyResult:
+                def scalar_one_or_none(self):
+                    return None
+            return EmptyResult()
+        return original_execute(statement, *args, **kwargs)
+
+    with patch.object(db_session, "execute", side_effect=mock_execute):
+        with pytest.raises(HTTPException) as exc_info:
+            register_vendor(db_session, req2)
+        assert exc_info.value.status_code == 409
+        assert "already exists" in exc_info.value.detail
+
+
+def test_live_concurrent_duplicate_customer_registration():
+    """Live multi-threaded concurrency test against isolated test database."""
+    target_email = "live_concurrent_cust@example.com"
+    req = CustomerRegisterRequest(
+        email=target_email,
+        password="Password123!",
+        full_name="Concurrent Cust"
+    )
+
+    def attempt_registration(worker_id: int):
+        db = TestingSessionLocal()
+        try:
+            user = register_customer(db, req)
+            return ("SUCCESS", 201, str(user.id))
+        except HTTPException as e:
+            return ("HTTP_ERROR", e.status_code, e.detail)
+        except Exception as e:
+            return ("UNEXPECTED_ERROR", 500, str(e))
+        finally:
+            db.close()
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
+        futures = [executor.submit(attempt_registration, i) for i in range(6)]
+        results = [f.result() for f in futures]
+
+    successes = [r for r in results if r[0] == "SUCCESS"]
+    conflicts = [r for r in results if r[0] == "HTTP_ERROR" and r[1] == 409]
+    unexpected = [r for r in results if r[0] == "UNEXPECTED_ERROR" or (r[0] == "HTTP_ERROR" and r[1] != 409)]
+
+    assert len(successes) == 1
+    assert len(conflicts) == 5
+    assert len(unexpected) == 0
+    for c in conflicts:
+        assert "already exists" in c[2]
+
+    # Cleanup user created in isolated test database
+    cleanup_db = TestingSessionLocal()
+    try:
+        user = cleanup_db.execute(select(User).where(User.email == target_email)).scalar_one_or_none()
+        if user:
+            cleanup_db.delete(user)
+            cleanup_db.commit()
+    finally:
+        cleanup_db.close()
+
+
+def test_live_concurrent_duplicate_vendor_registration():
+    """Live multi-threaded vendor concurrency test against isolated test database."""
+    target_email = "live_concurrent_vendor@example.com"
+    req = VendorRegisterRequest(
+        email=target_email,
+        password="Password123!",
+        full_name="Concurrent Vendor",
+        store_name="Concurrent Store"
+    )
+
+    def attempt_registration(worker_id: int):
+        db = TestingSessionLocal()
+        try:
+            user = register_vendor(db, req)
+            return ("SUCCESS", 201, str(user.id))
+        except HTTPException as e:
+            return ("HTTP_ERROR", e.status_code, e.detail)
+        except Exception as e:
+            return ("UNEXPECTED_ERROR", 500, str(e))
+        finally:
+            db.close()
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
+        futures = [executor.submit(attempt_registration, i) for i in range(6)]
+        results = [f.result() for f in futures]
+
+    successes = [r for r in results if r[0] == "SUCCESS"]
+    conflicts = [r for r in results if r[0] == "HTTP_ERROR" and r[1] == 409]
+    unexpected = [r for r in results if r[0] == "UNEXPECTED_ERROR" or (r[0] == "HTTP_ERROR" and r[1] != 409)]
+
+    assert len(successes) == 1
+    assert len(conflicts) == 5
+    assert len(unexpected) == 0
+    for c in conflicts:
+        assert "already exists" in c[2]
+
+    cleanup_db = TestingSessionLocal()
+    try:
+        user = cleanup_db.execute(select(User).where(User.email == target_email)).scalar_one_or_none()
+        if user:
+            cleanup_db.delete(user)
+            cleanup_db.commit()
+    finally:
+        cleanup_db.close()
 
 
 def test_invalid_input_validation(client: TestClient):

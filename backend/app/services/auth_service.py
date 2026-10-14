@@ -3,6 +3,7 @@ from typing import Tuple, Optional
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 
 from backend.app.core.security import (
     get_password_hash,
@@ -49,16 +50,24 @@ def register_customer(db: Session, request: CustomerRegisterRequest) -> User:
         role=UserRole.CUSTOMER,
         account_status=AccountStatus.ACTIVE
     )
-    db.add(user)
-    db.flush()  # Populates user.id within the current transaction
+    try:
+        db.add(user)
+        db.flush()  # Populates user.id within the current transaction
 
-    customer_profile = CustomerProfile(
-        user_id=user.id,
-        phone_number=request.phone_number.strip() if request.phone_number else None,
-        shipping_address=request.shipping_address.strip() if request.shipping_address else None
-    )
-    db.add(customer_profile)
-    db.commit()
+        customer_profile = CustomerProfile(
+            user_id=user.id,
+            phone_number=request.phone_number.strip() if request.phone_number else None,
+            shipping_address=request.shipping_address.strip() if request.shipping_address else None
+        )
+        db.add(customer_profile)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="An account with this email address already exists."
+        )
+
     db.refresh(user)
     return user
 
@@ -86,26 +95,34 @@ def register_vendor(db: Session, request: VendorRegisterRequest) -> User:
         role=UserRole.VENDOR,
         account_status=AccountStatus.ACTIVE
     )
-    db.add(user)
-    db.flush()
+    try:
+        db.add(user)
+        db.flush()
 
-    business_email = (
-        normalize_email(request.business_email)
-        if request.business_email
-        else email
-    )
+        business_email = (
+            normalize_email(request.business_email)
+            if request.business_email
+            else email
+        )
 
-    vendor_profile = VendorProfile(
-        user_id=user.id,
-        store_name=request.store_name.strip(),
-        business_email=business_email,
-        business_phone=request.business_phone.strip() if request.business_phone else None,
-        business_address=request.business_address.strip() if request.business_address else None,
-        business_description=request.business_description.strip() if request.business_description else None,
-        status=VendorStatus.PENDING
-    )
-    db.add(vendor_profile)
-    db.commit()
+        vendor_profile = VendorProfile(
+            user_id=user.id,
+            store_name=request.store_name.strip(),
+            business_email=business_email,
+            business_phone=request.business_phone.strip() if request.business_phone else None,
+            business_address=request.business_address.strip() if request.business_address else None,
+            business_description=request.business_description.strip() if request.business_description else None,
+            status=VendorStatus.PENDING
+        )
+        db.add(vendor_profile)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="An account with this email address already exists."
+        )
+
     db.refresh(user)
     return user
 
