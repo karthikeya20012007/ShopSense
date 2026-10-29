@@ -13,6 +13,20 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+type LogoutListener = () => void;
+const logoutListeners: Set<LogoutListener> = new Set();
+
+/**
+ * Register a listener to be notified whenever a user explicitly logs out or a session fails.
+ * Returns an unsubscription function.
+ */
+export const onAuthLogout = (listener: LogoutListener): (() => void) => {
+  logoutListeners.add(listener);
+  return () => {
+    logoutListeners.delete(listener);
+  };
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -46,6 +60,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     registerAuthFailureHandler(() => {
+      logoutListeners.forEach((listener) => {
+        try {
+          listener();
+        } catch {
+          // Ignore listener error
+        }
+      });
       setUser(null);
     });
 
@@ -65,6 +86,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {
       // Ignore network errors on logout
     } finally {
+      logoutListeners.forEach((listener) => {
+        try {
+          listener();
+        } catch {
+          // Ignore listener error
+        }
+      });
       setAccessToken(null);
       setUser(null);
     }

@@ -64,9 +64,14 @@ export const HomePage: React.FC = () => {
           </p>
 
           {/* Search Form */}
-          <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-2 max-w-xl">
+          <form id="catalog-search-form" role="search" onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-2 max-w-xl">
             <input
+              id="catalog-search-input"
+              name="search"
               type="text"
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck={false}
               placeholder="Search products by title, sensor type, or model..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}

@@ -17,6 +17,13 @@ class VendorRegisterRequest(BaseModel):
 
     model_config = ConfigDict(extra="ignore")
 
+    @field_validator("business_email", "business_phone", "business_address", "business_description", mode="before")
+    @classmethod
+    def empty_str_to_none(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and isinstance(v, str) and not v.strip():
+            return None
+        return v
+
 
 class VendorStatusUpdateRequest(BaseModel):
     status: VendorStatus
@@ -64,3 +71,10 @@ class VendorProfileUpdate(BaseModel):
     business_phone: Optional[str] = None
     business_address: Optional[str] = None
     business_description: Optional[str] = None
+
+    @field_validator("business_email", "business_phone", "business_address", "business_description", mode="before")
+    @classmethod
+    def empty_str_to_none(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and isinstance(v, str) and not v.strip():
+            return None
+        return v

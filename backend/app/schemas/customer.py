@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
+from pydantic import BaseModel, EmailStr, Field, field_validator, ConfigDict
 
 
 class CustomerRegisterRequest(BaseModel):
@@ -12,6 +12,13 @@ class CustomerRegisterRequest(BaseModel):
     shipping_address: Optional[str] = None
 
     model_config = ConfigDict(extra="ignore")
+
+    @field_validator("phone_number", "shipping_address", mode="before")
+    @classmethod
+    def empty_str_to_none(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and isinstance(v, str) and not v.strip():
+            return None
+        return v
 
 
 class CustomerProfileResponse(BaseModel):
@@ -27,3 +34,10 @@ class CustomerProfileResponse(BaseModel):
 class CustomerProfileUpdate(BaseModel):
     phone_number: Optional[str] = None
     shipping_address: Optional[str] = None
+
+    @field_validator("phone_number", "shipping_address", mode="before")
+    @classmethod
+    def empty_str_to_none(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and isinstance(v, str) and not v.strip():
+            return None
+        return v

@@ -1,6 +1,6 @@
 import uuid
 from typing import List
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
@@ -9,12 +9,13 @@ from backend.app.dependencies import get_current_user, require_approved_vendor
 from backend.app.models.user import User
 from backend.app.models.vendor import VendorProfile
 from backend.app.models.product import Product
+from backend.app.models.order import OrderItem
 from backend.app.schemas.vendor import (
     VendorOnboardingStatusResponse,
     VendorProfileResponse,
     VendorProfileUpdate
 )
-from backend.app.schemas.product import ProductCreate, ProductResponse
+from backend.app.schemas.product import ProductCreate, ProductUpdate, ProductResponse
 from backend.app.services.vendor_service import get_vendor_onboarding_status
 
 router = APIRouter(prefix="/vendors", tags=["Vendors"])
@@ -119,3 +120,117 @@ def api_create_vendor_product(
     res = ProductResponse.model_validate(product)
     res.store_name = vendor.store_name
     return res
+
+
+@router.get(
+    "/me/products/{product_id}",
+    response_model=ProductResponse,
+    summary="Get vendor product details (restricted to owner)"
+)
+def api_get_vendor_product(
+    product_id: uuid.UUID,
+    vendor: VendorProfile = Depends(require_approved_vendor),
+    db: Session = Depends(get_db)
+):
+    product = db.execute(
+        select(Product).where(
+            Product.id == product_id,
+            Product.vendor_id == vendor.id
+        )
+    ).scalar_one_or_none()
+
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Product with ID {product_id} not found."
+        )
+
+    res = ProductResponse.model_validate(product)
+    res.store_name = vendor.store_name
+    return res
+
+
+@router.patch(
+    "/me/products/{product_id}",
+    response_model=ProductResponse,
+    summary="Update product details (restricted to owner)"
+)
+def api_update_vendor_product(
+    product_id: uuid.UUID,
+    product_in: ProductUpdate,
+    vendor: VendorProfile = Depends(require_approved_vendor),
+    db: Session = Depends(get_db)
+):
+    product = db.execute(
+        select(Product).where(
+            Product.id == product_id,
+            Product.vendor_id == vendor.id
+        )
+    ).scalar_one_or_none()
+
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Product with ID {product_id} not found."
+        )
+
+    update_dict = product_in.model_dump(exclude_unset=True)
+    if "title" in update_dict and update_dict["title"] is not None:
+        update_dict["title"] = update_dict["title"].strip()
+    if "category" in update_dict and update_dict["category"] is not None:
+        update_dict["category"] = update_dict["category"].strip()
+    if "sku" in update_dict and update_dict["sku"] is not None:
+        update_dict["sku"] = update_dict["sku"].strip()
+    if "description" in update_dict and update_dict["description"] is not None:
+        update_dict["description"] = update_dict["description"].strip()
+
+    for key, value in update_dict.items():
+        setattr(product, key, value)
+
+    db.commit()
+    db.refresh(product)
+
+    res = ProductResponse.model_validate(product)
+    res.store_name = vendor.store_name
+    return res
+
+
+@router.delete(
+    "/me/products/{product_id}",
+    status_code=status.HTTP_200_OK,
+    summary="Delete product (restricted to owner, disallowed if ordered)"
+)
+def api_delete_vendor_product(
+    product_id: uuid.UUID,
+    vendor: VendorProfile = Depends(require_approved_vendor),
+    db: Session = Depends(get_db)
+):
+    product = db.execute(
+        select(Product).where(
+            Product.id == product_id,
+            Product.vendor_id == vendor.id
+        )
+    ).scalar_one_or_none()
+
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Product with ID {product_id} not found."
+        )
+
+    # Check if product is referenced by any order items
+    order_item_exists = db.execute(
+        select(OrderItem.id).where(OrderItem.product_id == product.id).limit(1)
+    ).scalar_one_or_none()
+
+    if order_item_exists:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Cannot delete product because customer orders reference this item. You may unpublish it instead to remove it from the catalog."
+        )
+
+    db.delete(product)
+    db.commit()
+
+    return {"message": "Product deleted successfully.", "id": str(product_id)}
+

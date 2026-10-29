@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { parseApiError } from '../api/errors';
 
 export const LoginPage: React.FC = () => {
   const { login } = useAuth();
@@ -43,10 +44,11 @@ export const LoginPage: React.FC = () => {
         navigate(destination);
       }
     } catch (err: any) {
-      setError(
-        err.response?.data?.detail ||
-          'Failed to sign in. Please verify your credentials.'
+      const parsed = parseApiError(
+        err,
+        'Failed to sign in. Please verify your credentials.'
       );
+      setError(parsed.message);
     } finally {
       setLoading(false);
     }
@@ -79,13 +81,16 @@ export const LoginPage: React.FC = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form id="login-form" onSubmit={handleSubmit} className="space-y-5" noValidate>
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
+            <label htmlFor="login-email" className="block text-xs font-semibold text-slate-700 mb-1">
               Email Address
             </label>
             <input
+              id="login-email"
+              name="email"
               type="email"
+              autoComplete="username"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -95,11 +100,14 @@ export const LoginPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
+            <label htmlFor="login-password" className="block text-xs font-semibold text-slate-700 mb-1">
               Password
             </label>
             <input
+              id="login-password"
+              name="password"
               type="password"
+              autoComplete="current-password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}

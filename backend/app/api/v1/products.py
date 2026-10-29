@@ -1,6 +1,6 @@
 import uuid
 import math
-from typing import Optional
+from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import select, func, or_
@@ -10,6 +10,22 @@ from backend.app.models.product import Product
 from backend.app.schemas.product import ProductResponse, ProductListResponse
 
 router = APIRouter(prefix="/products", tags=["Public Product Catalog"])
+
+
+@router.get(
+    "/categories",
+    response_model=List[str],
+    summary="List all distinct published product categories (Public)"
+)
+def api_list_categories(db: Session = Depends(get_db)):
+    stmt = (
+        select(Product.category)
+        .where(Product.is_published.is_(True))
+        .distinct()
+        .order_by(Product.category.asc())
+    )
+    categories = db.execute(stmt).scalars().all()
+    return categories
 
 
 @router.get(

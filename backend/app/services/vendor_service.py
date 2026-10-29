@@ -30,6 +30,30 @@ def get_pending_vendors(db: Session) -> List[VendorProfileResponse]:
     return results
 
 
+def get_all_vendors(
+    db: Session,
+    status_filter: Optional[VendorStatus] = None
+) -> List[VendorProfileResponse]:
+    """Retrieve all vendor profiles with optional status filtering for administrative overview."""
+    stmt = (
+        select(VendorProfile)
+        .options(joinedload(VendorProfile.user))
+    )
+    if status_filter:
+        stmt = stmt.where(VendorProfile.status == status_filter)
+    stmt = stmt.order_by(VendorProfile.created_at.desc())
+
+    records = db.execute(stmt).scalars().unique().all()
+    results = []
+    for vp in records:
+        data = VendorProfileResponse.model_validate(vp)
+        if vp.user:
+            data.applicant_email = vp.user.email
+            data.applicant_name = vp.user.full_name
+        results.append(data)
+    return results
+
+
 def update_vendor_status(
     db: Session,
     vendor_id: uuid.UUID,

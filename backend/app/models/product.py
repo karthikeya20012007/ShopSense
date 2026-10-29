@@ -2,13 +2,21 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 from typing import Optional
-from sqlalchemy import String, Text, Numeric, Integer, Boolean, DateTime, ForeignKey, Uuid, func
+from sqlalchemy import String, Text, Numeric, Integer, Boolean, DateTime, ForeignKey, Uuid, func, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from backend.app.core.database import Base
 
 
 class Product(Base):
     __tablename__ = "products"
+
+    __table_args__ = (
+        CheckConstraint(
+            "stock_quantity >= 0",
+            name="ck_products_stock_quantity_non_negative"
+        ),
+    )
+
 
     id: Mapped[uuid.UUID] = mapped_column(
         Uuid(as_uuid=True),

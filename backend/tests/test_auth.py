@@ -108,6 +108,57 @@ def test_vendor_duplicate_email_registration_fails(client: TestClient):
     assert "already exists" in res2.json()["detail"]
 
 
+def test_vendor_registration_with_empty_optional_fields_succeeds(client: TestClient):
+    """Ensure empty string optional fields are normalized to None and do not trigger 422."""
+    payload = {
+        "email": "vendor_optional@example.com",
+        "password": "Password123!",
+        "full_name": "Vendor Optional",
+        "store_name": "Store Optional",
+        "business_email": "",
+        "business_phone": "",
+        "business_address": "",
+        "business_description": ""
+    }
+    res = client.post("/api/v1/auth/register/vendor", json=payload)
+    assert res.status_code == 201
+    data = res.json()
+    assert data["email"] == "vendor_optional@example.com"
+
+
+def test_vendor_duplicate_email_with_empty_optional_fields_returns_409(client: TestClient):
+    """Ensure duplicate email returns 409 Conflict even when optional fields contain empty strings."""
+    payload = {
+        "email": "vendor_dup_empty@example.com",
+        "password": "Password123!",
+        "full_name": "Vendor Dup One",
+        "store_name": "Store Dup One",
+        "business_email": ""
+    }
+    res1 = client.post("/api/v1/auth/register/vendor", json=payload)
+    assert res1.status_code == 201
+
+    # Second registration with same email and empty optional field
+    res2 = client.post("/api/v1/auth/register/vendor", json=payload)
+    assert res2.status_code == 409
+    assert "already exists" in res2.json()["detail"]
+
+
+def test_customer_registration_with_empty_optional_fields_succeeds(client: TestClient):
+    """Ensure customer registration with empty strings in optional fields succeeds."""
+    payload = {
+        "email": "customer_optional@example.com",
+        "password": "Password123!",
+        "full_name": "Customer Optional",
+        "phone_number": "",
+        "shipping_address": ""
+    }
+    res = client.post("/api/v1/auth/register/customer", json=payload)
+    assert res.status_code == 201
+    data = res.json()
+    assert data["email"] == "customer_optional@example.com"
+
+
 def test_customer_registration_race_integrity_error_handled(db_session: Session):
     """Simulate a race condition where the select-check misses an inflight insert, causing IntegrityError."""
     req = CustomerRegisterRequest(

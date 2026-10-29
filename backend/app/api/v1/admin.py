@@ -1,15 +1,33 @@
 import uuid
-from typing import List
-from fastapi import APIRouter, Depends
+from typing import List, Optional
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from backend.app.core.database import get_db
 from backend.app.dependencies import require_admin
 from backend.app.models.user import User
+from backend.app.models.enums import VendorStatus
 from backend.app.schemas.vendor import VendorProfileResponse, VendorStatusUpdateRequest
-from backend.app.services.vendor_service import get_pending_vendors, update_vendor_status
+from backend.app.services.vendor_service import (
+    get_pending_vendors,
+    get_all_vendors,
+    update_vendor_status,
+)
 
 router = APIRouter(prefix="/admin", tags=["Admin Operations"])
+
+
+@router.get(
+    "/vendors",
+    response_model=List[VendorProfileResponse],
+    summary="List all vendors with optional status filter (Admin only)"
+)
+def api_get_all_vendors(
+    status_filter: Optional[VendorStatus] = Query(None, alias="status"),
+    admin_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    return get_all_vendors(db=db, status_filter=status_filter)
 
 
 @router.get(

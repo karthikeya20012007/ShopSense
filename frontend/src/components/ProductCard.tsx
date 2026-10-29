@@ -1,16 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Product } from '../types';
+import { useCart } from '../context/CartContext';
 
 interface ProductCardProps {
   product: Product;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+  const { addToCart } = useCart();
+  const [added, setAdded] = useState(false);
+
   const formattedPrice =
     typeof product.price === 'number'
       ? product.price.toFixed(2)
       : parseFloat(product.price).toFixed(2);
+
+  const handleQuickAdd = () => {
+    if (product.stock_quantity > 0) {
+      addToCart(product, 1);
+      setAdded(true);
+      setTimeout(() => setAdded(false), 1500);
+    }
+  };
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col h-full">
@@ -24,6 +36,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             {product.store_name}
           </span>
         )}
+        <span
+          className={`absolute top-3 right-3 px-2 py-0.5 rounded text-[11px] font-semibold ${
+            product.stock_quantity > 0
+              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+              : 'bg-rose-50 text-rose-700 border border-rose-200'
+          }`}
+        >
+          {product.stock_quantity > 0 ? `${product.stock_quantity} in stock` : 'Out of stock'}
+        </span>
       </div>
 
       <div className="p-5 flex-1 flex flex-col justify-between">
@@ -36,20 +57,36 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </p>
         </div>
 
-        <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+        <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
           <div>
             <span className="text-xs text-slate-400 block font-medium">Price</span>
-            <span className="text-lg font-bold text-slate-900">${formattedPrice}</span>
+            <span className="text-lg font-bold text-slate-900">₹{formattedPrice}</span>
           </div>
 
-          <Link
-            to={`/products/${product.id}`}
-            className="px-3 py-1.5 rounded-lg bg-sky-50 text-sky-700 hover:bg-sky-100 font-semibold text-xs transition-colors"
-          >
-            View Details
-          </Link>
+          <div className="flex items-center space-x-1.5">
+            <Link
+              to={`/products/${product.id}`}
+              className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold text-xs transition-colors"
+            >
+              Details
+            </Link>
+            <button
+              onClick={handleQuickAdd}
+              disabled={product.stock_quantity <= 0}
+              className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition-colors ${
+                product.stock_quantity <= 0
+                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                  : added
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-sky-600 hover:bg-sky-700 text-white shadow-xs'
+              }`}
+            >
+              {added ? '✓ Added' : '+ Add'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
 };
+

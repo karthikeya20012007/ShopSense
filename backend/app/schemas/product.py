@@ -28,6 +28,8 @@ class ProductUpdate(BaseModel):
     stock_quantity: Optional[int] = Field(None, ge=0)
     is_published: Optional[bool] = None
 
+    model_config = ConfigDict(extra="forbid")
+
 
 class ProductResponse(BaseModel):
     id: uuid.UUID
