@@ -18,8 +18,16 @@ import type {
   VendorOrder,
 } from '../types';
 import { StatusBadge } from '../components/StatusBadge';
+import { InventoryDashboardView } from '../components/InventoryDashboardView';
+import { ProductImage } from '../components/ProductImage';
+import { Card, CardContent } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/Badge';
+import { Input } from '../components/ui/Input';
+import { Modal } from '../components/ui/Modal';
+import { EmptyState } from '../components/ui/EmptyState';
 
-type VendorTab = 'analytics' | 'products' | 'orders' | 'profile';
+type VendorTab = 'analytics' | 'inventory' | 'products' | 'orders' | 'profile';
 
 export const VendorDashboardPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<VendorTab>('analytics');
@@ -267,7 +275,7 @@ export const VendorDashboardPage: React.FC = () => {
 
   const formatPrice = (val: string | number | undefined | null) => {
     if (val === undefined || val === null) return '0.00';
-    const num = typeof val === 'number' ? val : parseFloat(val);
+    const num = typeof val === 'number' ? val : parseFloat(String(val));
     return isNaN(num) ? '0.00' : num.toFixed(2);
   };
 
@@ -280,20 +288,30 @@ export const VendorDashboardPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-[50vh] flex flex-col items-center justify-center space-y-3">
-        <div className="w-8 h-8 border-4 border-sky-600 border-t-transparent rounded-full animate-spin" />
-        <p className="text-xs text-slate-500 font-medium">Loading vendor operations...</p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-6">
+        <div className="h-40 rounded-3xl bg-slate-200 animate-pulse" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-28 rounded-2xl bg-slate-200 animate-pulse" />
+          ))}
+        </div>
       </div>
     );
   }
 
   if (error || !profile) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <div className="bg-rose-50 border border-rose-200 text-rose-700 p-6 rounded-2xl text-center">
-          <p className="text-sm font-semibold mb-2">Vendor Access Error</p>
-          <p className="text-xs">{error}</p>
-        </div>
+      <div className="max-w-4xl mx-auto px-4 py-16">
+        <Card className="border-rose-200 bg-rose-50/50 p-8 text-center">
+          <CardContent className="space-y-4">
+            <span className="text-4xl block">⚠️</span>
+            <h3 className="text-base font-bold text-slate-900">Vendor Operations Access Error</h3>
+            <p className="text-sm text-slate-600">{error || 'Unable to retrieve vendor account data.'}</p>
+            <Button variant="primary" onClick={loadVendorData}>
+              Retry Connection
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -301,78 +319,112 @@ export const VendorDashboardPage: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       {/* Vendor Store Header */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xs">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <div className="flex items-center space-x-3 mb-1">
-              <h1 className="text-2xl font-bold text-slate-900">{profile.store_name}</h1>
-              <StatusBadge status={profile.status} />
+      <Card className="border-slate-200/80 shadow-xs overflow-hidden">
+        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 p-6 sm:p-8 text-white">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-2xl">🏪</span>
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{profile.store_name}</h1>
+                <StatusBadge status={profile.status} />
+              </div>
+              <p className="text-xs text-slate-300 flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span>
+                  Store ID: <span className="font-mono text-slate-100">{profile.id.slice(0, 8)}...</span>
+                </span>
+                <span>&bull;</span>
+                <span>
+                  Email: <span className="text-slate-100">{profile.business_email || 'Not configured'}</span>
+                </span>
+                {profile.business_phone && (
+                  <>
+                    <span>&bull;</span>
+                    <span>Phone: {profile.business_phone}</span>
+                  </>
+                )}
+              </p>
             </div>
-            <p className="text-xs text-slate-500">
-              Vendor Store ID: <span className="font-mono text-slate-700">{profile.id}</span> •
-              Contact: <span className="text-slate-700">{profile.business_email || 'Not set'}</span>
-            </p>
-          </div>
 
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={openAddModal}
-              className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-xs"
-            >
-              + Add Product
-            </button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="primary"
+                onClick={openAddModal}
+                className="bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold"
+              >
+                + Add Product
+              </Button>
+            </div>
           </div>
         </div>
 
         {/* Tab Controls */}
-        <div className="flex space-x-2 mt-6 pt-6 border-t border-slate-100 overflow-x-auto">
+        <div className="flex gap-2 p-3 bg-slate-50 border-t border-slate-200 overflow-x-auto text-xs">
           <button
             onClick={() => setActiveTab('analytics')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+            className={`px-4 py-2 rounded-xl font-bold transition-all shrink-0 flex items-center gap-2 ${
               activeTab === 'analytics'
-                ? 'bg-sky-600 text-white shadow-xs'
-                : 'text-slate-600 hover:bg-slate-100'
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'text-slate-600 hover:bg-slate-200/70'
             }`}
           >
-            📊 Sales Analytics
+            <span>📊</span>
+            <span>Sales Analytics</span>
           </button>
+
+          <button
+            onClick={() => setActiveTab('inventory')}
+            className={`px-4 py-2 rounded-xl font-bold transition-all shrink-0 flex items-center gap-2 ${
+              activeTab === 'inventory'
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'text-slate-600 hover:bg-slate-200/70'
+            }`}
+          >
+            <span>📦</span>
+            <span>Inventory Intelligence</span>
+          </button>
+
           <button
             onClick={() => setActiveTab('products')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center space-x-2 ${
+            className={`px-4 py-2 rounded-xl font-bold transition-all shrink-0 flex items-center gap-2 ${
               activeTab === 'products'
-                ? 'bg-sky-600 text-white shadow-xs'
-                : 'text-slate-600 hover:bg-slate-100'
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'text-slate-600 hover:bg-slate-200/70'
             }`}
           >
-            <span>🏷️ Products ({products.length})</span>
+            <span>🏷️</span>
+            <span>Products ({products.length})</span>
             {metrics && metrics.low_stock_count > 0 && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] bg-rose-500 text-white font-bold">
+              <span className="px-2 py-0.5 rounded-full text-[10px] bg-rose-500 text-white font-bold ml-1">
                 {metrics.low_stock_count} Low Stock
               </span>
             )}
           </button>
+
           <button
             onClick={() => setActiveTab('orders')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+            className={`px-4 py-2 rounded-xl font-bold transition-all shrink-0 flex items-center gap-2 ${
               activeTab === 'orders'
-                ? 'bg-sky-600 text-white shadow-xs'
-                : 'text-slate-600 hover:bg-slate-100'
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'text-slate-600 hover:bg-slate-200/70'
             }`}
           >
-            🧾 Store Orders
+            <span>🧾</span>
+            <span>Store Orders</span>
           </button>
+
           <button
             onClick={() => setActiveTab('profile')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
+            className={`px-4 py-2 rounded-xl font-bold transition-all shrink-0 flex items-center gap-2 ${
               activeTab === 'profile'
-                ? 'bg-sky-600 text-white shadow-xs'
-                : 'text-slate-600 hover:bg-slate-100'
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'text-slate-600 hover:bg-slate-200/70'
             }`}
           >
-            ⚙️ Store Profile
+            <span>⚙️</span>
+            <span>Store Profile</span>
           </button>
         </div>
-      </div>
+      </Card>
 
       {deleteError && (
         <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex justify-between items-center">
@@ -387,183 +439,209 @@ export const VendorDashboardPage: React.FC = () => {
       )}
 
       {/* ========================================================================= */}
+      {/* TAB: Inventory Intelligence */}
+      {/* ========================================================================= */}
+      {activeTab === 'inventory' && <InventoryDashboardView isAdmin={false} />}
+
+      {/* ========================================================================= */}
       {/* TAB 1: Sales Analytics */}
       {/* ========================================================================= */}
       {activeTab === 'analytics' && (
         <div className="space-y-6">
           {/* KPI Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
-              <span className="text-xs font-semibold text-slate-400 block mb-1 uppercase tracking-wider">
-                Recognized Revenue
-              </span>
-              <span className="text-2xl font-extrabold text-slate-900">
-                ₹{formatPrice(metrics?.recognized_revenue)}
-              </span>
-              <span className="text-[11px] text-emerald-600 font-medium block mt-1">
-                From completed orders
-              </span>
-            </div>
+            <Card className="border-slate-200/80 shadow-xs">
+              <CardContent className="p-5">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+                  Recognized Revenue
+                </span>
+                <div className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+                  ₹{formatPrice(metrics?.recognized_revenue)}
+                </div>
+                <span className="text-xs text-emerald-600 font-semibold block mt-1 flex items-center gap-1">
+                  <span>✓</span> From completed orders
+                </span>
+              </CardContent>
+            </Card>
 
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
-              <span className="text-xs font-semibold text-slate-400 block mb-1 uppercase tracking-wider">
-                Units Sold
-              </span>
-              <span className="text-2xl font-extrabold text-slate-900">
-                {metrics?.total_units_sold ?? 0}
-              </span>
-              <span className="text-[11px] text-slate-400 block mt-1">
-                Across {metrics?.completed_order_count ?? 0} completed orders
-              </span>
-            </div>
+            <Card className="border-slate-200/80 shadow-xs">
+              <CardContent className="p-5">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+                  Units Sold
+                </span>
+                <div className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+                  {metrics?.total_units_sold ?? 0}
+                </div>
+                <span className="text-xs text-slate-500 block mt-1">
+                  Across {metrics?.completed_order_count ?? 0} completed orders
+                </span>
+              </CardContent>
+            </Card>
 
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
-              <span className="text-xs font-semibold text-slate-400 block mb-1 uppercase tracking-wider">
-                Store Products
-              </span>
-              <span className="text-2xl font-extrabold text-slate-900">
-                {metrics?.total_products ?? 0}
-              </span>
-              <span className="text-[11px] text-slate-400 block mt-1">
-                Active in catalog
-              </span>
-            </div>
+            <Card className="border-slate-200/80 shadow-xs">
+              <CardContent className="p-5">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+                  Store Products
+                </span>
+                <div className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+                  {metrics?.total_products ?? 0}
+                </div>
+                <span className="text-xs text-slate-500 block mt-1">
+                  Active in catalog
+                </span>
+              </CardContent>
+            </Card>
 
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
-              <span className="text-xs font-semibold text-slate-400 block mb-1 uppercase tracking-wider">
-                Inventory Alerts
-              </span>
-              <span className={`text-2xl font-extrabold ${
-                (metrics?.low_stock_count ?? 0) > 0 ? 'text-rose-600' : 'text-slate-900'
-              }`}>
-                {metrics?.low_stock_count ?? 0}
-              </span>
-              <span className="text-[11px] text-slate-400 block mt-1">
-                Items with ≤ 5 units in stock
-              </span>
-            </div>
+            <Card className="border-slate-200/80 shadow-xs">
+              <CardContent className="p-5">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+                  Inventory Alerts
+                </span>
+                <div
+                  className={`text-2xl sm:text-3xl font-extrabold ${
+                    (metrics?.low_stock_count ?? 0) > 0 ? 'text-rose-600' : 'text-slate-900'
+                  }`}
+                >
+                  {metrics?.low_stock_count ?? 0}
+                </div>
+                <span className="text-xs text-slate-500 block mt-1">
+                  Items with &le; 5 units in stock
+                </span>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Revenue Trend Area Chart */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-              <div>
-                <h2 className="text-base font-bold text-slate-900">Store Revenue Trend</h2>
-                <p className="text-xs text-slate-500">
-                  Daily recognized revenue generated by your products in completed orders
-                </p>
+          <Card className="border-slate-200/80 shadow-xs">
+            <CardContent className="p-6 space-y-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <div>
+                  <h2 className="text-base font-bold text-slate-900">Store Revenue Trend</h2>
+                  <p className="text-xs text-slate-500">
+                    Daily recognized revenue generated by your products in completed orders
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-1 border border-slate-200 rounded-lg p-0.5 bg-slate-50 text-xs">
+                  {[7, 30, 90].map((days) => (
+                    <button
+                      key={days}
+                      onClick={() => setDateRangeDays(days)}
+                      className={`px-3 py-1 rounded-md font-semibold transition-colors ${
+                        dateRangeDays === days
+                          ? 'bg-slate-900 text-white shadow-xs'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      Last {days}d
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              <div className="flex items-center space-x-1 border border-slate-200 rounded-lg p-0.5 bg-slate-50 text-xs">
-                {[7, 30, 90].map((days) => (
-                  <button
-                    key={days}
-                    onClick={() => setDateRangeDays(days)}
-                    className={`px-3 py-1 rounded-md font-semibold transition-colors ${
-                      dateRangeDays === days
-                        ? 'bg-white text-sky-700 shadow-xs'
-                        : 'text-slate-500 hover:text-slate-900'
-                    }`}
-                  >
-                    Last {days}d
-                  </button>
-                ))}
+              <div className="h-64 w-full pt-4">
+                {analyticsLoading ? (
+                  <div className="h-full flex items-center justify-center">
+                    <div className="w-6 h-6 border-2 border-sky-600 border-t-transparent rounded-full animate-spin" />
+                  </div>
+                ) : revenueTrend.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-slate-400 text-xs">
+                    <span className="text-2xl mb-1">📉</span>
+                    <span>No completed sales transactions in this period</span>
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={revenueTrend}>
+                      <defs>
+                        <linearGradient id="vendorRevGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#0284c7" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#0284c7" stopOpacity={0.0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                      <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#64748b' }} />
+                      <YAxis
+                        tick={{ fontSize: 11, fill: '#64748b' }}
+                        tickFormatter={(val) => `₹${val}`}
+                      />
+                      <Tooltip
+                        formatter={(value: any) => [`₹${formatPrice(value)}`, 'Revenue']}
+                        labelFormatter={(label) => `Date: ${label}`}
+                        contentStyle={{
+                          backgroundColor: '#0f172a',
+                          color: '#fff',
+                          borderRadius: '0.75rem',
+                          border: 'none',
+                          fontSize: '0.75rem',
+                        }}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="revenue"
+                        stroke="#0284c7"
+                        strokeWidth={2.5}
+                        fillOpacity={1}
+                        fill="url(#vendorRevGrad)"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                )}
               </div>
-            </div>
-
-            <div className="h-64 w-full pt-4">
-              {analyticsLoading ? (
-                <div className="h-full flex items-center justify-center">
-                  <div className="w-6 h-6 border-2 border-sky-600 border-t-transparent rounded-full animate-spin" />
-                </div>
-              ) : revenueTrend.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-slate-400 text-xs">
-                  <span>📉</span>
-                  <span>No completed sales transactions in this period</span>
-                </div>
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={revenueTrend}>
-                    <defs>
-                      <linearGradient id="vendorRevGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#0284c7" stopOpacity={0.25} />
-                        <stop offset="95%" stopColor="#0284c7" stopOpacity={0.0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                    <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#64748b' }} />
-                    <YAxis
-                      tick={{ fontSize: 11, fill: '#64748b' }}
-                      tickFormatter={(val) => `₹${val}`}
-                    />
-                    <Tooltip
-                      formatter={(value: any) => [`₹${formatPrice(value)}`, 'Revenue']}
-                      labelFormatter={(label) => `Date: ${label}`}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="revenue"
-                      stroke="#0284c7"
-                      strokeWidth={2}
-                      fillOpacity={1}
-                      fill="url(#vendorRevGrad)"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           {/* Product Sales Performance Table */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
-            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-              Product Sales Performance
-            </h3>
-            {productPerformance.length === 0 ? (
-              <p className="text-xs text-slate-400 text-center py-6">
-                No product sales recorded yet.
-              </p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="border-b border-slate-100 text-slate-400 uppercase font-semibold">
-                    <tr>
-                      <th className="pb-3 px-2">Product Title</th>
-                      <th className="pb-3 px-2">Category</th>
-                      <th className="pb-3 px-2">Price</th>
-                      <th className="pb-3 px-2">Current Stock</th>
-                      <th className="pb-3 px-2">Units Sold</th>
-                      <th className="pb-3 px-2 text-right">Recognized Revenue</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {productPerformance.map((p) => (
-                      <tr key={p.product_id} className="hover:bg-slate-50/50">
-                        <td className="py-3 px-2 font-semibold text-slate-900">{p.title}</td>
-                        <td className="py-3 px-2 text-slate-500">{p.category}</td>
-                        <td className="py-3 px-2 font-bold text-slate-900">₹{formatPrice(p.price)}</td>
-                        <td className="py-3 px-2">
-                          <span
-                            className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
-                              (p.current_stock ?? 0) <= 5
-                                ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                                : 'bg-slate-100 text-slate-700'
-                            }`}
-                          >
-                            {p.current_stock} units
-                          </span>
-                        </td>
-                        <td className="py-3 px-2 text-slate-600">{p.units_sold}</td>
-                        <td className="py-3 px-2 font-bold text-sky-700 text-right">
-                          ₹{formatPrice(p.revenue)}
-                        </td>
+          <Card className="border-slate-200/80 shadow-xs">
+            <CardContent className="p-6 space-y-4">
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                Product Sales Performance
+              </h3>
+              {productPerformance.length === 0 ? (
+                <p className="text-xs text-slate-400 text-center py-6">
+                  No product sales recorded yet.
+                </p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="border-b border-slate-200 text-slate-400 uppercase font-semibold">
+                      <tr>
+                        <th className="pb-3 px-3">Product Title</th>
+                        <th className="pb-3 px-3">Category</th>
+                        <th className="pb-3 px-3">Price</th>
+                        <th className="pb-3 px-3">Current Stock</th>
+                        <th className="pb-3 px-3">Units Sold</th>
+                        <th className="pb-3 px-3 text-right">Recognized Revenue</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {productPerformance.map((p) => (
+                        <tr key={p.product_id} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="py-3 px-3 font-semibold text-slate-900">{p.title}</td>
+                          <td className="py-3 px-3 text-slate-500">{p.category}</td>
+                          <td className="py-3 px-3 font-bold text-slate-900">₹{formatPrice(p.price)}</td>
+                          <td className="py-3 px-3">
+                            <span
+                              className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
+                                (p.current_stock ?? 0) <= 5
+                                  ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                                  : 'bg-slate-100 text-slate-700'
+                              }`}
+                            >
+                              {p.current_stock} units
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 text-slate-600 font-semibold">{p.units_sold}</td>
+                          <td className="py-3 px-3 font-bold text-emerald-600 text-right">
+                            ₹{formatPrice(p.revenue)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       )}
 
@@ -571,235 +649,224 @@ export const VendorDashboardPage: React.FC = () => {
       {/* TAB 2: Product Management */}
       {/* ========================================================================= */}
       {activeTab === 'products' && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <h2 className="text-base font-bold text-slate-900">Manage Store Products</h2>
-              <p className="text-xs text-slate-500">
-                Add, edit, inspect inventory levels, or toggle publication in the public catalog
-              </p>
+        <Card className="border-slate-200/80 shadow-xs">
+          <CardContent className="p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h2 className="text-base font-bold text-slate-900">Manage Store Products</h2>
+                <p className="text-xs text-slate-500">
+                  Add, edit, inspect inventory levels, or toggle publication in the public catalog
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <input
+                  id="vendor-product-search"
+                  name="search"
+                  type="text"
+                  autoComplete="off"
+                  spellCheck={false}
+                  placeholder="Search products..."
+                  value={productSearch}
+                  onChange={(e) => setProductSearch(e.target.value)}
+                  className="px-3 py-1.5 border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500 flex-1 sm:w-56"
+                />
+                <Button variant="primary" onClick={openAddModal} className="shrink-0 text-xs">
+                  + Add Product
+                </Button>
+              </div>
             </div>
 
-            <div className="flex items-center space-x-2 w-full sm:w-auto">
-              <input
-                id="vendor-product-search"
-                name="search"
-                type="text"
-                autoComplete="off"
-                spellCheck={false}
-                placeholder="Search products..."
-                value={productSearch}
-                onChange={(e) => setProductSearch(e.target.value)}
-                className="px-3 py-1.5 border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500 flex-1 sm:w-48"
+            {filteredProducts.length === 0 ? (
+              <EmptyState
+                icon="🏷️"
+                title="No products found"
+                description="Click the button below to add your first product or adjust search criteria."
+                actionLabel="+ Add New Product"
+                onAction={openAddModal}
               />
-              <button
-                onClick={openAddModal}
-                className="px-3.5 py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold rounded-lg transition-colors shrink-0 shadow-xs"
-              >
-                + Add Product
-              </button>
-            </div>
-          </div>
-
-          {filteredProducts.length === 0 ? (
-            <div className="text-center py-12 border border-dashed border-slate-200 rounded-xl">
-              <span className="text-3xl block mb-2">🏷️</span>
-              <h3 className="text-sm font-semibold text-slate-800 mb-1">No products found</h3>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto mb-4">
-                Click the button below to add your first product or adjust search criteria.
-              </p>
-              <button
-                onClick={openAddModal}
-                className="px-4 py-2 bg-sky-600 text-white text-xs font-semibold rounded-lg hover:bg-sky-700 shadow-xs"
-              >
-                + Add New Product
-              </button>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 text-slate-500 uppercase font-semibold border-b border-slate-200">
-                  <tr>
-                    <th className="py-3 px-4">Title</th>
-                    <th className="py-3 px-4">Category</th>
-                    <th className="py-3 px-4">Price</th>
-                    <th className="py-3 px-4">Stock</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filteredProducts.map((p) => (
-                    <tr key={p.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="py-3 px-4 font-semibold text-slate-900">
-                        {p.title}
-                        {p.sku && (
-                          <span className="block text-[11px] text-slate-400 font-mono">
-                            SKU: {p.sku}
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[11px] font-medium">
-                          {p.category}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 font-bold text-slate-900">
-                        ₹{formatPrice(p.price)}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span
-                          className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
-                            p.stock_quantity <= 5
-                              ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                              : 'text-slate-700'
-                          }`}
-                        >
-                          {p.stock_quantity} units
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <span
-                          className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
-                            p.is_published
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                              : 'bg-amber-50 text-amber-700 border border-amber-200'
-                          }`}
-                        >
-                          {p.is_published ? 'Published' : 'Draft'}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-right space-x-2">
-                        <button
-                          onClick={() => openEditModal(p)}
-                          className="px-2.5 py-1 rounded border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold text-[11px] transition-colors"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => setDeletingProductId(p.id)}
-                          className="px-2.5 py-1 rounded border border-rose-200 text-rose-700 hover:bg-rose-50 font-semibold text-[11px] transition-colors"
-                        >
-                          Delete
-                        </button>
-                      </td>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 text-slate-500 uppercase font-semibold border-b border-slate-200">
+                    <tr>
+                      <th className="py-3 px-4">Item</th>
+                      <th className="py-3 px-4">Category</th>
+                      <th className="py-3 px-4">Price</th>
+                      <th className="py-3 px-4">Stock</th>
+                      <th className="py-3 px-4">Status</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredProducts.map((p) => (
+                      <tr key={p.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 border border-slate-200">
+                              <ProductImage product={p} className="w-full h-full object-cover" />
+                            </div>
+                            <div>
+                              <span className="font-semibold text-slate-900 block">{p.title}</span>
+                              {p.sku && (
+                                <span className="text-[11px] text-slate-400 font-mono">
+                                  SKU: {p.sku}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">
+                          <Badge variant="default" size="sm">
+                            {p.category}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-4 font-bold text-slate-900">
+                          ₹{formatPrice(p.price)}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span
+                            className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
+                              p.stock_quantity <= 5
+                                ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                                : 'text-slate-700 font-medium'
+                            }`}
+                          >
+                            {p.stock_quantity} units
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <Badge variant={p.is_published ? 'success' : 'warning'} size="sm">
+                            {p.is_published ? 'Published' : 'Draft'}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-4 text-right space-x-2">
+                          <Button
+                            variant="outline"
+                            size="xs"
+                            onClick={() => openEditModal(p)}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="danger"
+                            size="xs"
+                            onClick={() => setDeletingProductId(p.id)}
+                          >
+                            Delete
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {/* ========================================================================= */}
       {/* TAB 3: Store Orders (Vendor-Scoped) */}
       {/* ========================================================================= */}
       {activeTab === 'orders' && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-base font-bold text-slate-900">Store Orders</h2>
-              <p className="text-xs text-slate-500">
-                Customer transactions containing items sold by your store (isolated to your line items)
-              </p>
+        <Card className="border-slate-200/80 shadow-xs">
+          <CardContent className="p-6 space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-base font-bold text-slate-900">Store Orders</h2>
+                <p className="text-xs text-slate-500">
+                  Customer transactions containing items sold by your store (isolated to your line items)
+                </p>
+              </div>
+              <Badge variant="default" size="md">
+                {vendorOrders.length} Orders
+              </Badge>
             </div>
-            <span className="text-xs font-semibold bg-slate-100 text-slate-700 px-3 py-1 rounded-full">
-              {vendorOrders.length} Orders
-            </span>
-          </div>
 
-          {ordersLoading ? (
-            <div className="min-h-[20vh] flex items-center justify-center">
-              <div className="w-8 h-8 border-4 border-sky-600 border-t-transparent rounded-full animate-spin" />
-            </div>
-          ) : vendorOrders.length === 0 ? (
-            <div className="text-center py-12 border border-dashed border-slate-200 rounded-xl">
-              <span className="text-3xl block mb-2">🧾</span>
-              <p className="text-xs text-slate-500">No customer orders received yet.</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {vendorOrders.map((vo) => (
-                <div
-                  key={vo.order_id}
-                  className="border border-slate-200 rounded-xl overflow-hidden text-xs"
-                >
-                  <div className="bg-slate-50 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-200">
-                    <div>
-                      <span className="font-mono font-bold text-slate-900">
-                        Order #{vo.order_id.slice(0, 8)}...
-                      </span>
-                      <span className="text-slate-400 block text-[11px]">
-                        Placed on {new Date(vo.created_at).toLocaleString()}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center space-x-3">
-                      <span
-                        className={`px-2 py-0.5 rounded text-[11px] font-semibold border ${
-                          vo.status === 'COMPLETED'
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                            : 'bg-amber-50 text-amber-700 border-amber-200'
-                        }`}
-                      >
-                        {vo.status}
-                      </span>
-                      <span className="font-extrabold text-slate-900 text-sm">
-                        ₹{formatPrice(vo.vendor_items_total)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Items in this order */}
-                  <div className="p-4 divide-y divide-slate-100">
-                    {vo.items.map((item) => (
-                      <div key={item.id} className="py-2 flex justify-between items-center">
-                        <div>
-                          <span className="font-semibold text-slate-900 block">
-                            {item.product_title || 'Store Product'}
-                          </span>
-                          <span className="text-[11px] text-slate-400">
-                            Quantity: {item.quantity} × ₹{formatPrice(item.unit_price)}
-                          </span>
-                        </div>
-                        <span className="font-bold text-slate-900">
-                          ₹{formatPrice(item.subtotal)}
+            {ordersLoading ? (
+              <div className="min-h-[20vh] flex items-center justify-center">
+                <div className="w-8 h-8 border-4 border-sky-600 border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : vendorOrders.length === 0 ? (
+              <EmptyState
+                icon="🧾"
+                title="No customer orders received yet"
+                description="Orders containing products sold by your store will appear here automatically upon checkout."
+              />
+            ) : (
+              <div className="space-y-4">
+                {vendorOrders.map((vo) => (
+                  <div
+                    key={vo.order_id}
+                    className="border border-slate-200 rounded-xl overflow-hidden text-xs"
+                  >
+                    <div className="bg-slate-50 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-200">
+                      <div>
+                        <span className="font-mono font-bold text-slate-900">
+                          Order #{vo.order_id.slice(0, 8)}...
+                        </span>
+                        <span className="text-slate-400 block text-[11px] mt-0.5">
+                          Placed on {new Date(vo.created_at).toLocaleString()}
                         </span>
                       </div>
-                    ))}
+
+                      <div className="flex items-center gap-3">
+                        <StatusBadge status={vo.status} />
+                        <span className="font-extrabold text-slate-900 text-sm">
+                          ₹{formatPrice(vo.vendor_items_total)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Items in this order */}
+                    <div className="p-4 divide-y divide-slate-100">
+                      {vo.items.map((item) => (
+                        <div key={item.id} className="py-2.5 flex justify-between items-center">
+                          <div>
+                            <span className="font-semibold text-slate-900 block">
+                              {item.product_title || 'Store Product'}
+                            </span>
+                            <span className="text-[11px] text-slate-500">
+                              Quantity: {item.quantity} &times; ₹{formatPrice(item.unit_price)}
+                            </span>
+                          </div>
+                          <span className="font-bold text-slate-900">
+                            ₹{formatPrice(item.subtotal)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {/* ========================================================================= */}
       {/* TAB 4: Store Profile */}
       {/* ========================================================================= */}
       {activeTab === 'profile' && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6 max-w-2xl">
-          <div>
-            <h2 className="text-base font-bold text-slate-900">Store Profile & Settings</h2>
-            <p className="text-xs text-slate-500">
-              Update your public store details and contact information
-            </p>
-          </div>
-
-          {profileSuccess && (
-            <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-lg">
-              ✓ Store profile updated successfully!
-            </div>
-          )}
-
-          <form id="vendor-profile-form" onSubmit={handleUpdateProfile} autoComplete="off" className="space-y-4 text-xs">
+        <Card className="border-slate-200/80 shadow-xs max-w-2xl">
+          <CardContent className="p-6 sm:p-8 space-y-6">
             <div>
-              <label htmlFor="vendor-profile-storename" className="block font-semibold text-slate-700 mb-1">
-                Store Name
-              </label>
-              <input
+              <h2 className="text-base font-bold text-slate-900">Store Profile & Settings</h2>
+              <p className="text-xs text-slate-500">
+                Update your public store details and contact information
+              </p>
+            </div>
+
+            {profileSuccess && (
+              <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-xl font-medium">
+                ✓ Store profile updated successfully!
+              </div>
+            )}
+
+            <form id="vendor-profile-form" onSubmit={handleUpdateProfile} autoComplete="off" className="space-y-4 text-xs">
+              <Input
+                label="Store Name"
                 id="vendor-profile-storename"
                 name="store_name"
                 type="text"
@@ -807,16 +874,11 @@ export const VendorDashboardPage: React.FC = () => {
                 required
                 value={profileForm.store_name}
                 onChange={(e) => setProfileForm({ ...profileForm, store_name: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
-            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="vendor-profile-email" className="block font-semibold text-slate-700 mb-1">
-                  Contact Email
-                </label>
-                <input
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input
+                  label="Contact Email"
                   id="vendor-profile-email"
                   name="business_email"
                   type="email"
@@ -825,14 +887,9 @@ export const VendorDashboardPage: React.FC = () => {
                   onChange={(e) =>
                     setProfileForm({ ...profileForm, business_email: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
-              </div>
-              <div>
-                <label htmlFor="vendor-profile-phone" className="block font-semibold text-slate-700 mb-1">
-                  Phone Number
-                </label>
-                <input
+                <Input
+                  label="Phone Number"
                   id="vendor-profile-phone"
                   name="business_phone"
                   type="text"
@@ -841,16 +898,11 @@ export const VendorDashboardPage: React.FC = () => {
                   onChange={(e) =>
                     setProfileForm({ ...profileForm, business_phone: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
               </div>
-            </div>
 
-            <div>
-              <label htmlFor="vendor-profile-address" className="block font-semibold text-slate-700 mb-1">
-                Business HQ Address
-              </label>
-              <input
+              <Input
+                label="Business HQ Address"
                 id="vendor-profile-address"
                 name="business_address"
                 type="text"
@@ -859,227 +911,217 @@ export const VendorDashboardPage: React.FC = () => {
                 onChange={(e) =>
                   setProfileForm({ ...profileForm, business_address: e.target.value })
                 }
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
-            </div>
 
-            <div>
-              <label htmlFor="vendor-profile-description" className="block font-semibold text-slate-700 mb-1">
-                Store Description
-              </label>
-              <textarea
-                id="vendor-profile-description"
-                name="business_description"
-                rows={3}
-                value={profileForm.business_description}
-                onChange={(e) =>
-                  setProfileForm({ ...profileForm, business_description: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
-              />
-            </div>
+              <div>
+                <label htmlFor="vendor-profile-description" className="block text-xs font-semibold text-slate-700 mb-1">
+                  Store Description
+                </label>
+                <textarea
+                  id="vendor-profile-description"
+                  name="business_description"
+                  rows={3}
+                  value={profileForm.business_description}
+                  onChange={(e) =>
+                    setProfileForm({ ...profileForm, business_description: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
 
-            <div className="pt-2">
-              <button
-                type="submit"
-                disabled={profileSaving}
-                className="px-5 py-2.5 bg-sky-600 hover:bg-sky-700 disabled:opacity-50 text-white rounded-lg font-semibold text-xs transition-colors shadow-xs"
-              >
-                {profileSaving ? 'Saving...' : 'Save Profile Changes'}
-              </button>
-            </div>
-          </form>
-        </div>
+              <div className="pt-2">
+                <Button
+                  type="submit"
+                  disabled={profileSaving}
+                  isLoading={profileSaving}
+                  variant="primary"
+                >
+                  Save Profile Changes
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       )}
 
       {/* ========================================================================= */}
       {/* Product Add / Edit Modal */}
       {/* ========================================================================= */}
-      {showProductModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-slate-200 max-w-lg w-full p-6 shadow-xl space-y-4">
-            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-              <h3 className="text-base font-bold text-slate-900">
-                {editingProductId ? 'Edit Product' : 'Add New Product'}
-              </h3>
-              <button
-                onClick={() => setShowProductModal(false)}
-                className="text-slate-400 hover:text-slate-600 text-lg font-bold"
-              >
-                ✕
-              </button>
+      <Modal
+        isOpen={showProductModal}
+        onClose={() => setShowProductModal(false)}
+        title={editingProductId ? 'Edit Product' : 'Add New Product'}
+        maxWidth="lg"
+      >
+        <div className="space-y-4">
+          {formError && (
+            <div className="bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded-xl text-xs font-medium">
+              {formError}
+            </div>
+          )}
+
+          <form id="vendor-product-form" onSubmit={handleSaveProduct} autoComplete="off" className="space-y-3 text-xs">
+            <Input
+              label="Product Title"
+              id="modal-product-title"
+              name="title"
+              type="text"
+              autoComplete="off"
+              required
+              value={productForm.title}
+              onChange={(e) => setProductForm({ ...productForm, title: e.target.value })}
+              placeholder="e.g. Dual-Beam Thermal People Counter"
+            />
+
+            <div className="grid grid-cols-2 gap-3">
+              <Input
+                label="Price (₹ INR)"
+                id="modal-product-price"
+                name="price"
+                type="number"
+                step="0.01"
+                autoComplete="off"
+                required
+                value={productForm.price}
+                onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
+                placeholder="4999.00"
+              />
+
+              <div>
+                <label htmlFor="modal-product-category" className="block text-xs font-semibold text-slate-700 mb-1">
+                  Category
+                </label>
+                <select
+                  id="modal-product-category"
+                  name="category"
+                  value={productForm.category}
+                  onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                >
+                  <option value="Hardware">Hardware</option>
+                  <option value="Sensors">Sensors</option>
+                  <option value="POS Accessories">POS Accessories</option>
+                  <option value="Electronics">Electronics</option>
+                  <option value="Software">Software</option>
+                </select>
+              </div>
             </div>
 
-            {formError && (
-              <div className="bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded-lg text-xs">
-                {formError}
-              </div>
-            )}
+            <div className="grid grid-cols-2 gap-3">
+              <Input
+                label="SKU Code"
+                id="modal-product-sku"
+                name="sku"
+                type="text"
+                autoComplete="off"
+                value={productForm.sku}
+                onChange={(e) => setProductForm({ ...productForm, sku: e.target.value })}
+                placeholder="e.g. SENS-TC-200"
+              />
 
-            <form id="vendor-product-form" onSubmit={handleSaveProduct} autoComplete="off" className="space-y-3 text-xs">
-              <div>
-                <label htmlFor="modal-product-title" className="block font-semibold text-slate-700 mb-1">Product Title</label>
-                <input
-                  id="modal-product-title"
-                  name="title"
-                  type="text"
-                  autoComplete="off"
-                  required
-                  value={productForm.title}
-                  onChange={(e) => setProductForm({ ...productForm, title: e.target.value })}
-                  placeholder="e.g. Dual-Beam Thermal People Counter"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
-                />
-              </div>
+              <Input
+                label="Stock Units"
+                id="modal-product-stock"
+                name="stock_quantity"
+                type="number"
+                min="0"
+                autoComplete="off"
+                value={productForm.stock_quantity.toString()}
+                onChange={(e) =>
+                  setProductForm({
+                    ...productForm,
+                    stock_quantity: parseInt(e.target.value) || 0,
+                  })
+                }
+              />
+            </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label htmlFor="modal-product-price" className="block font-semibold text-slate-700 mb-1">Price (₹ INR)</label>
-                  <input
-                    id="modal-product-price"
-                    name="price"
-                    type="number"
-                    step="0.01"
-                    autoComplete="off"
-                    required
-                    value={productForm.price}
-                    onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
-                    placeholder="4999.00"
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="modal-product-category" className="block font-semibold text-slate-700 mb-1">Category</label>
-                  <select
-                    id="modal-product-category"
-                    name="category"
-                    value={productForm.category}
-                    onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
-                  >
-                    <option value="Hardware">Hardware</option>
-                    <option value="Sensors">Sensors</option>
-                    <option value="POS Accessories">POS Accessories</option>
-                    <option value="Electronics">Electronics</option>
-                    <option value="Software">Software</option>
-                  </select>
-                </div>
-              </div>
+            <div>
+              <label htmlFor="modal-product-desc" className="block text-xs font-semibold text-slate-700 mb-1">
+                Description
+              </label>
+              <textarea
+                id="modal-product-desc"
+                name="description"
+                rows={2}
+                value={productForm.description}
+                onChange={(e) =>
+                  setProductForm({ ...productForm, description: e.target.value })
+                }
+                placeholder="Key features, specs, mounting options..."
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              />
+            </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label htmlFor="modal-product-sku" className="block font-semibold text-slate-700 mb-1">SKU Code</label>
-                  <input
-                    id="modal-product-sku"
-                    name="sku"
-                    type="text"
-                    autoComplete="off"
-                    value={productForm.sku}
-                    onChange={(e) => setProductForm({ ...productForm, sku: e.target.value })}
-                    placeholder="e.g. SENS-TC-200"
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="modal-product-stock" className="block font-semibold text-slate-700 mb-1">Stock Units</label>
-                  <input
-                    id="modal-product-stock"
-                    name="stock_quantity"
-                    type="number"
-                    min="0"
-                    autoComplete="off"
-                    value={productForm.stock_quantity}
-                    onChange={(e) =>
-                      setProductForm({
-                        ...productForm,
-                        stock_quantity: parseInt(e.target.value) || 0,
-                      })
-                    }
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
-                  />
-                </div>
-              </div>
+            <div className="flex items-center gap-2 pt-2">
+              <input
+                type="checkbox"
+                id="modal_is_published"
+                checked={productForm.is_published}
+                onChange={(e) =>
+                  setProductForm({ ...productForm, is_published: e.target.checked })
+                }
+                className="rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+              />
+              <label htmlFor="modal_is_published" className="font-semibold text-slate-700">
+                Publish to Public Catalog
+              </label>
+            </div>
 
-              <div>
-                <label htmlFor="modal-product-desc" className="block font-semibold text-slate-700 mb-1">Description</label>
-                <textarea
-                  id="modal-product-desc"
-                  name="description"
-                  rows={2}
-                  value={productForm.description}
-                  onChange={(e) =>
-                    setProductForm({ ...productForm, description: e.target.value })
-                  }
-                  placeholder="Key features, specs, mounting options..."
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
-                />
-              </div>
-
-              <div className="flex items-center space-x-2 pt-2">
-                <input
-                  type="checkbox"
-                  id="modal_is_published"
-                  checked={productForm.is_published}
-                  onChange={(e) =>
-                    setProductForm({ ...productForm, is_published: e.target.checked })
-                  }
-                  className="rounded border-slate-300 text-sky-600 focus:ring-sky-500"
-                />
-                <label htmlFor="modal_is_published" className="font-semibold text-slate-700">
-                  Publish to Public Catalog
-                </label>
-              </div>
-
-              <div className="flex justify-end space-x-2 pt-4 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setShowProductModal(false)}
-                  className="px-3.5 py-2 border border-slate-300 text-slate-700 rounded-lg font-semibold hover:bg-slate-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={formLoading}
-                  className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-semibold shadow-xs disabled:opacity-50"
-                >
-                  {formLoading ? 'Saving...' : editingProductId ? 'Update Product' : 'Publish Product'}
-                </button>
-              </div>
-            </form>
-          </div>
+            <div className="flex justify-end gap-2 pt-4 border-t border-slate-100">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowProductModal(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={formLoading}
+                isLoading={formLoading}
+              >
+                {editingProductId ? 'Update Product' : 'Publish Product'}
+              </Button>
+            </div>
+          </form>
         </div>
-      )}
+      </Modal>
 
       {/* ========================================================================= */}
       {/* Delete Confirmation Modal */}
       {/* ========================================================================= */}
-      {deletingProductId && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-slate-200 max-w-sm w-full p-6 shadow-xl space-y-4 text-center">
-            <span className="text-3xl block mb-2">🗑️</span>
-            <h3 className="text-base font-bold text-slate-900">Delete Product?</h3>
-            <p className="text-xs text-slate-500">
-              Are you sure you want to delete this product? If customer orders reference this item, the database foreign-key constraint will disallow deletion and you should unpublish it instead.
-            </p>
+      <Modal
+        isOpen={Boolean(deletingProductId)}
+        onClose={() => setDeletingProductId(null)}
+        title="Delete Product?"
+        maxWidth="sm"
+      >
+        <div className="space-y-4 text-center">
+          <span className="text-4xl block">🗑️</span>
+          <p className="text-xs text-slate-600 leading-relaxed">
+            Are you sure you want to delete this product? If customer orders reference this item, the database foreign-key constraint will disallow deletion and you should unpublish it instead.
+          </p>
 
-            <div className="flex justify-center space-x-3 pt-2">
-              <button
-                onClick={() => setDeletingProductId(null)}
-                className="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg font-semibold text-xs hover:bg-slate-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleDeleteProduct(deletingProductId)}
-                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-semibold text-xs shadow-xs"
-              >
-                Yes, Delete
-              </button>
-            </div>
+          <div className="flex justify-center gap-3 pt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setDeletingProductId(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => deletingProductId && handleDeleteProduct(deletingProductId)}
+            >
+              Yes, Delete
+            </Button>
           </div>
         </div>
-      )}
+      </Modal>
     </div>
   );
 };

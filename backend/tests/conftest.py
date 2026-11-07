@@ -2,8 +2,10 @@ import os
 import pytest
 from decimal import Decimal
 from typing import Generator
+from urllib.parse import urlparse
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
+from sqlalchemy.engine import Engine
 from sqlalchemy.orm import sessionmaker, Session
 
 from backend.app.core.config import settings
@@ -245,3 +247,37 @@ def disabled_user(db_session: Session) -> User:
 def disabled_user_headers(disabled_user: User) -> dict:
     token = create_access_token(subject=str(disabled_user.id), role=disabled_user.role.value)
     return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
+def fresh_db_engine() -> Generator[Engine, None, None]:
+    """Provide an independent database engine verified against shopsense_test."""
+    db_url = os.environ.get("TEST_DATABASE_URL", settings.TEST_DATABASE_URL)
+    parsed = urlparse(db_url)
+    db_name = parsed.path.lstrip("/")
+    if db_name != "shopsense_test":
+        raise RuntimeError(f"Unsafe DB URL: expected 'shopsense_test', got '{db_name}'.")
+
+    engine = create_engine(db_url, pool_pre_ping=True)
+    with engine.connect() as conn:
+        current_db = conn.execute(text("SELECT current_database()")).scalar()
+        if current_db != "shopsense_test":
+            engine.dispose()
+            raise RuntimeError(f"Unsafe database connection: expected 'shopsense_test', got '{current_db}'.")
+
+    yield engine
+    engine.dispose()
+
+
+@pytest.fixture
+def fresh_db_session(fresh_db_engine: Engine) -> Generator[Session, None, None]:
+    """Provide a fresh independent database session verified against shopsense_test."""
+    FreshSession = sessionmaker(autocommit=False, autoflush=False, bind=fresh_db_engine)
+    session = FreshSession()
+    current_db = session.execute(text("SELECT current_database()")).scalar()
+    if current_db != "shopsense_test":
+        session.close()
+        raise RuntimeError(f"Unsafe database connection: expected 'shopsense_test', got '{current_db}'.")
+
+    yield session
+    session.close()

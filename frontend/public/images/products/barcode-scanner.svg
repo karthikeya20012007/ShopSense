@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <linearGradient id="scanBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#f1f5f9"/>
+    </linearGradient>
+    <linearGradient id="laserBeam" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ef4444" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#dc2626" stop-opacity="0.1"/>
+    </linearGradient>
+    <filter id="scanShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <rect width="400" height="300" fill="url(#scanBg)"/>
+
+  <!-- Charging & Communication Cradle Base -->
+  <path d="M110 225 h180 l10 20 h-200 z" fill="#1e293b" filter="url(#scanShadow)"/>
+  <rect x="130" y="210" width="140" height="18" rx="4" fill="#334155"/>
+  <circle cx="150" cy="235" r="3" fill="#10b981"/>
+  <circle cx="165" cy="235" r="3" fill="#38bdf8"/>
+
+  <!-- Optical Laser Fan Beam Projection -->
+  <polygon points="120,95 20,40 20,180" fill="url(#laserBeam)"/>
+  <line x1="120" y1="95" x2="20" y2="110" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="6,3"/>
+
+  <!-- Barcode Target on Left -->
+  <g transform="translate(15, 60)">
+    <rect x="0" y="0" width="4" height="80" fill="#0f172a"/>
+    <rect x="8" y="0" width="8" height="80" fill="#0f172a"/>
+    <rect x="20" y="0" width="3" height="80" fill="#0f172a"/>
+    <rect x="26" y="0" width="10" height="80" fill="#0f172a"/>
+    <rect x="40" y="0" width="6" height="80" fill="#0f172a"/>
+    <rect x="50" y="0" width="3" height="80" fill="#0f172a"/>
+    <rect x="56" y="0" width="8" height="80" fill="#0f172a"/>
+  </g>
+
+  <!-- 2D Scanner Main Head (Pistol Top) -->
+  <path d="M120 75 h110 c12 0 22 10 22 22 v30 c0 12 -10 22 -22 22 h-95 l-15 -35 z" fill="#0f172a" filter="url(#scanShadow)"/>
+  
+  <!-- Optical Scan Window Bezel & Protective Rubber Armor -->
+  <path d="M120 75 l-8 22 l8 52 h12 v-74 z" fill="#38bdf8"/>
+  <rect x="115" y="85" width="6" height="48" rx="2" fill="#ef4444"/>
+
+  <!-- Top Status Indicator & Decode Beeper Grill -->
+  <rect x="155" y="70" width="45" height="7" rx="3" fill="#10b981"/>
+  <circle cx="215" cy="74" r="3" fill="#38bdf8"/>
+
+  <!-- Ergonomic Rubberized Pistol Grip Handle -->
+  <path d="M185 149 l-22 75 c-3 10 5 18 15 18 h38 c10 0 18 -8 16 -18 l-15 -75 z" fill="#1e293b"/>
+  <path d="M195 160 l-12 50 h24 l8 -50 z" fill="#334155"/>
+
+  <!-- Trigger Mechanism -->
+  <path d="M168 155 c-10 6 -12 18 -6 26 l12 2 z" fill="#ef4444"/>
+
+  <!-- Bottom Cradle Terminal Contacts -->
+  <rect x="175" y="238" width="50" height="4" fill="#eab308"/>
+
+  <!-- Title / Specification -->
+  <text x="200" y="278" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="#334155" text-anchor="middle">Cordless 2D Optical Laser Imager</text>
+</svg>

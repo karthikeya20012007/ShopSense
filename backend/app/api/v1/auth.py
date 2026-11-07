@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Response, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Response, Request, status, Form, Body
 from sqlalchemy.orm import Session
 
 from backend.app.core.config import settings
@@ -79,19 +79,42 @@ def api_register_vendor(
     response_model=TokenResponse,
     summary="Log in using email and password"
 )
-def api_login(
-    login_data: LoginRequest,
+async def api_login(
+    request: Request,
     response: Response,
     db: Session = Depends(get_db)
 ):
-    user = authenticate_user(db, email=login_data.email, password=login_data.password)
+    """Authenticate user using either JSON payload or form data.
+
+    Supports backward‑compatible JSON login used by existing tests and
+    traditional HTML form login for browser clients.
+    """
+    content_type = request.headers.get("content-type", "")
+    email: Optional[str] = None
+    pwd: Optional[str] = None
+
+    if "application/x-www-form-urlencoded" in content_type or "multipart/form-data" in content_type:
+        form = await request.form()
+        email = form.get("username") or form.get("email")
+        pwd = form.get("password")
+    else:
+        try:
+            body = await request.json()
+            if isinstance(body, dict):
+                email = body.get("email") or body.get("username")
+                pwd = body.get("password")
+        except Exception:
+            pass
+
+    if not email or not pwd:
+        raise HTTPException(status_code=400, detail="Missing authentication credentials")
+
+    user = authenticate_user(db, email=email, password=pwd)
     access_token, raw_refresh = create_user_tokens(db, user)
-
-    # Set secure HttpOnly cookie for browser clients
     set_refresh_cookie(response, raw_refresh)
-
     return TokenResponse(
         access_token=access_token,
+        refresh_token=raw_refresh,
         token_type="bearer",
         user=user
     )
@@ -108,10 +131,14 @@ def api_refresh_token(
     body: Optional[RefreshRequest] = None,
     db: Session = Depends(get_db)
 ):
-    # Check HttpOnly cookie first, then fall back to JSON body
+    # Check HttpOnly cookie first, then fall back to JSON body, then Bearer header
     raw_token = request.cookies.get(settings.REFRESH_COOKIE_NAME)
     if not raw_token and body and body.refresh_token:
         raw_token = body.refresh_token
+    if not raw_token:
+        auth_hdr = request.headers.get("Authorization")
+        if auth_hdr and auth_hdr.startswith("Bearer "):
+            raw_token = auth_hdr[7:].strip()
 
     if not raw_token:
         raise HTTPException(
@@ -124,6 +151,7 @@ def api_refresh_token(
 
     return TokenResponse(
         access_token=new_access_token,
+        refresh_token=new_raw_refresh,
         token_type="bearer",
         user=user
     )
@@ -143,6 +171,10 @@ def api_logout(
     raw_token = request.cookies.get(settings.REFRESH_COOKIE_NAME)
     if not raw_token and body and body.refresh_token:
         raw_token = body.refresh_token
+    if not raw_token:
+        auth_hdr = request.headers.get("Authorization")
+        if auth_hdr and auth_hdr.startswith("Bearer "):
+            raw_token = auth_hdr[7:].strip()
 
     if raw_token:
         revoke_refresh_token(db, raw_token)

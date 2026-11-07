@@ -6,9 +6,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 
 from backend.app.models.customer import CustomerProfile
-from backend.app.models.enums import OrderStatus
+from backend.app.models.enums import OrderStatus, StockMovementType
 from backend.app.models.order import Order, OrderItem
 from backend.app.models.product import Product
+from backend.app.models.stock_movement import StockMovement
 from backend.app.schemas.order import (
     CheckoutRequest,
     OrderItemResponse,
@@ -105,8 +106,10 @@ def checkout_order(
             )
 
 
-    # 6. Calculate subtotals, order total, and decrement stock
+    # 6. Calculate subtotals, order total, decrement stock, and record ledger movements
+    order_id = uuid.uuid4()
     order_items: List[OrderItem] = []
+    stock_movements: List[StockMovement] = []
     order_total = Decimal("0.00")
 
     for pid in sorted_product_ids:
@@ -116,8 +119,23 @@ def checkout_order(
         subtotal = (unit_price * qty).quantize(Decimal("0.01"))
         order_total += subtotal
 
+        prev_stock = product.stock_quantity
         # Decrement stock inside the locked transaction
         product.stock_quantity -= qty
+        new_stock = product.stock_quantity
+
+        # Create stock movement ledger entry
+        movement = StockMovement(
+            product_id=product.id,
+            warehouse_id=None,
+            change_quantity=-qty,
+            previous_stock=prev_stock,
+            new_stock=new_stock,
+            movement_type=StockMovementType.CHECKOUT_DECREMENT,
+            reference_order_id=order_id,
+            notes=f"Checkout decrement of {qty} unit(s) for order {order_id}"
+        )
+        stock_movements.append(movement)
 
         order_item = OrderItem(
             product_id=product.id,
@@ -132,6 +150,7 @@ def checkout_order(
 
     # 7. Create Order with OrderStatus.PENDING (payment separation)
     order = Order(
+        id=order_id,
         customer_id=customer.id,
         status=OrderStatus.PENDING,
         total_amount=order_total,
@@ -140,6 +159,7 @@ def checkout_order(
 
     try:
         db.add(order)
+        db.add_all(stock_movements)
         db.commit()
     except Exception as e:
         db.rollback()
@@ -340,7 +360,7 @@ def update_order_status(
             detail=f"Invalid status transition from '{order.status.value}' to '{new_status.value}'."
         )
 
-    # 3. If transitioning from PENDING to CANCELLED, atomically restore inventory
+    # 3. If transitioning from PENDING to CANCELLED, atomically restore inventory and record ledger movements
     try:
         if order.status == OrderStatus.PENDING and new_status == OrderStatus.CANCELLED:
             # Aggregate quantities to restore per product
@@ -362,7 +382,23 @@ def update_order_status(
 
                 for pid in sorted_pids:
                     if pid in products_by_id:
-                        products_by_id[pid].stock_quantity += restore_map[pid]
+                        prod = products_by_id[pid]
+                        qty_to_restore = restore_map[pid]
+                        prev_stock = prod.stock_quantity
+                        prod.stock_quantity += qty_to_restore
+                        new_stock = prod.stock_quantity
+
+                        cancellation_movement = StockMovement(
+                            product_id=prod.id,
+                            warehouse_id=None,
+                            change_quantity=qty_to_restore,
+                            previous_stock=prev_stock,
+                            new_stock=new_stock,
+                            movement_type=StockMovementType.CANCELLATION_RESTOCK,
+                            reference_order_id=order.id,
+                            notes=f"Cancellation restock of {qty_to_restore} unit(s) for order {order.id}"
+                        )
+                        db.add(cancellation_movement)
 
         order.status = new_status
         db.commit()

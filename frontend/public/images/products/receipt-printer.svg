@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <linearGradient id="printBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#f1f5f9"/>
+    </linearGradient>
+    <filter id="printShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <rect width="400" height="300" fill="url(#printBg)"/>
+
+  <!-- Steel POS Cash Drawer Base -->
+  <rect x="70" y="150" width="260" height="90" rx="8" fill="#1e293b" stroke="#0f172a" stroke-width="2" filter="url(#printShadow)"/>
+  <rect x="80" y="160" width="240" height="70" rx="4" fill="#0f172a"/>
+  
+  <!-- Media Coin / Check Insertion Slot on Drawer -->
+  <rect x="90" y="170" width="70" height="6" rx="2" fill="#334155"/>
+  <rect x="170" y="170" width="70" height="6" rx="2" fill="#334155"/>
+
+  <!-- Drawer Key Lock Cylinder -->
+  <circle cx="280" cy="195" r="8" fill="#475569" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="280" y1="190" x2="280" y2="200" stroke="#0f172a" stroke-width="2"/>
+
+  <!-- Drawer Handle Recess -->
+  <rect x="160" y="195" width="80" height="18" rx="4" fill="#1e293b"/>
+
+  <!-- Heavy-Duty Thermal POS Receipt Printer (Resting on Cash Drawer) -->
+  <rect x="130" y="45" width="140" height="100" rx="8" fill="#0f172a" stroke="#334155" stroke-width="2" filter="url(#printShadow)"/>
+  <rect x="140" y="55" width="120" height="30" rx="4" fill="#1e293b"/>
+
+  <!-- Paper Output Slot -->
+  <rect x="150" y="70" width="100" height="6" rx="2" fill="#000000"/>
+
+  <!-- Thermal Paper Receipt Extruding with Content -->
+  <path d="M155 72 h90 l-5 -45 l-10 6 l-10 -6 l-10 6 l-10 -6 l-10 6 l-10 -6 l-10 6 l-10 -6 l-5 45 z" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" filter="url(#printShadow)"/>
+  <rect x="165" y="40" width="40" height="4" fill="#0f172a"/>
+  <line x1="165" y1="50" x2="225" y2="50" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="165" y1="56" x2="210" y2="56" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="165" y1="62" x2="230" y2="62" stroke="#0f172a" stroke-width="3"/>
+
+  <!-- Printer Control Buttons & Status LEDs -->
+  <rect x="145" y="105" width="30" height="14" rx="3" fill="#2563eb"/>
+  <text x="160" y="115" font-family="system-ui,sans-serif" font-size="7" font-weight="700" fill="#ffffff" text-anchor="middle">FEED</text>
+
+  <!-- LEDs -->
+  <circle cx="210" cy="112" r="3" fill="#10b981"/> <!-- Power -->
+  <circle cx="225" cy="112" r="3" fill="#38bdf8"/> <!-- Online -->
+  <circle cx="240" cy="112" r="3" fill="#ef4444" fill-opacity="0.3"/> <!-- Error -->
+
+  <!-- Title / Specification -->
+  <text x="200" y="278" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="#334155" text-anchor="middle">Thermal Receipt Printer &amp; Steel Cash Drawer</text>
+</svg>

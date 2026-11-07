@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <linearGradient id="posBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#f1f5f9"/>
+    </linearGradient>
+    <linearGradient id="screenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="uiHeader" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+    <filter id="posShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="300" fill="url(#posBg)"/>
+
+  <!-- Heavy Cast Aluminum Base -->
+  <path d="M140 236 h120 l12 12 h-144 z" fill="#334155" filter="url(#posShadow)"/>
+  <rect x="136" y="244" width="128" height="6" rx="2" fill="#1e293b"/>
+
+  <!-- Articulated Stand / Neck -->
+  <path d="M185 160 l-10 78 h50 l-10 -78 z" fill="#475569"/>
+  <line x1="192" y1="170" x2="185" y2="235" stroke="#64748b" stroke-width="2"/>
+  <circle cx="200" cy="180" r="10" fill="#334155"/>
+
+  <!-- Customer-Facing Secondary Display (Rear/Side Angle) -->
+  <rect x="250" y="85" width="80" height="60" rx="4" fill="#1e293b" filter="url(#posShadow)"/>
+  <rect x="254" y="89" width="72" height="52" rx="2" fill="#0284c7"/>
+  <text x="290" y="112" font-family="system-ui,sans-serif" font-size="8" font-weight="700" fill="#ffffff" text-anchor="middle">TOTAL DUE</text>
+  <text x="290" y="130" font-family="system-ui,sans-serif" font-size="14" font-weight="900" fill="#ffffff" text-anchor="middle">₹3,450</text>
+  <path d="M260 145 l-15 45 h15 l12 -45 z" fill="#475569"/>
+
+  <!-- Main Cashier Touchscreen Enclosure -->
+  <rect x="80" y="45" width="200" height="135" rx="10" fill="#0f172a" stroke="#cbd5e1" stroke-width="2" filter="url(#posShadow)"/>
+  
+  <!-- Touchscreen Glass -->
+  <rect x="88" y="53" width="184" height="119" rx="4" fill="url(#screenGrad)"/>
+
+  <!-- POS UI: Top App Header Bar -->
+  <rect x="88" y="53" width="184" height="20" rx="4" fill="url(#uiHeader)"/>
+  <circle cx="100" cy="63" r="4" fill="#ffffff" fill-opacity="0.9"/>
+  <rect x="110" y="60" width="60" height="6" rx="2" fill="#ffffff" fill-opacity="0.9"/>
+  <rect x="235" y="60" width="30" height="6" rx="2" fill="#93c5fd"/>
+
+  <!-- POS UI: Left Item List -->
+  <rect x="96" y="80" width="100" height="14" rx="2" fill="#334155"/>
+  <rect x="100" y="84" width="55" height="5" rx="1" fill="#94a3b8"/>
+  <rect x="170" y="84" width="20" height="5" rx="1" fill="#38bdf8"/>
+
+  <rect x="96" y="98" width="100" height="14" rx="2" fill="#1e293b"/>
+  <rect x="100" y="102" width="65" height="5" rx="1" fill="#94a3b8"/>
+  <rect x="170" y="102" width="20" height="5" rx="1" fill="#38bdf8"/>
+
+  <rect x="96" y="116" width="100" height="14" rx="2" fill="#334155"/>
+  <rect x="100" y="120" width="45" height="5" rx="1" fill="#94a3b8"/>
+  <rect x="170" y="120" width="20" height="5" rx="1" fill="#38bdf8"/>
+
+  <!-- POS UI: Right Action / Tender Panel -->
+  <rect x="204" y="80" width="60" height="36" rx="3" fill="#1e293b" stroke="#3b82f6" stroke-width="1"/>
+  <text x="234" y="95" font-family="system-ui,sans-serif" font-size="8" font-weight="600" fill="#94a3b8" text-anchor="middle">SUBTOTAL</text>
+  <text x="234" y="109" font-family="system-ui,sans-serif" font-size="11" font-weight="800" fill="#38bdf8" text-anchor="middle">₹3,450</text>
+
+  <rect x="204" y="122" width="60" height="18" rx="3" fill="#10b981"/>
+  <text x="234" y="134" font-family="system-ui,sans-serif" font-size="8" font-weight="700" fill="#ffffff" text-anchor="middle">PAY NOW</text>
+
+  <!-- Side-Mounted Magnetic/NFC Reader Module -->
+  <rect x="278" y="70" width="12" height="70" rx="3" fill="#334155"/>
+  <line x1="284" y1="75" x2="284" y2="135" stroke="#0f172a" stroke-width="2"/>
+  <circle cx="284" cy="115" r="3" fill="#10b981"/>
+
+  <!-- Status / Brand Badge -->
+  <text x="200" y="278" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="#334155" text-anchor="middle">Enterprise Dual-Touch POS Workstation</text>
+</svg>

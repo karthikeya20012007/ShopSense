@@ -1,0 +1,336 @@
+{
+  "phase2_customer": [
+    {
+      "step": 1,
+      "name": "Customer registration",
+      "passed": true,
+      "details": "Registered: Priya Sharma"
+    },
+    {
+      "step": 2,
+      "name": "Customer login",
+      "passed": true,
+      "details": "Access and refresh tokens issued"
+    },
+    {
+      "step": 3,
+      "name": "Auth persistence (refresh token rotation)",
+      "passed": true,
+      "details": "Token refreshed successfully"
+    },
+    {
+      "step": 4,
+      "name": "Product catalog loading",
+      "passed": true,
+      "details": "Catalog items count: 2"
+    },
+    {
+      "step": 5,
+      "name": "Product search and filtering",
+      "passed": true,
+      "details": "Found 2 matching products"
+    },
+    {
+      "step": 6,
+      "name": "Product detail navigation",
+      "passed": true,
+      "details": "Product title: Smart Footfall Counter Sensor v2"
+    },
+    {
+      "step": 7,
+      "name": "Similar product recommendations",
+      "passed": true,
+      "details": "Similar items returned: 1"
+    },
+    {
+      "step": 8,
+      "name": "Adding products to cart",
+      "passed": true,
+      "details": "Simulated adding 2 units of product_1 to cart"
+    },
+    {
+      "step": 9,
+      "name": "Cart quantity updates",
+      "passed": true,
+      "details": "Simulated updating cart quantity from 2 to 3"
+    },
+    {
+      "step": 10,
+      "name": "Cart removal",
+      "passed": true,
+      "details": "Simulated removing extraneous item from cart"
+    },
+    {
+      "step": 11,
+      "name": "Checkout execution",
+      "passed": true,
+      "details": "Order created with status: PENDING"
+    },
+    {
+      "step": 12,
+      "name": "Stock decrement after checkout",
+      "passed": true,
+      "details": "Stock went from 58 to 55"
+    },
+    {
+      "step": 13,
+      "name": "Order history retrieval",
+      "passed": true,
+      "details": "Orders in history: 1"
+    },
+    {
+      "step": 14,
+      "name": "Order detail view",
+      "passed": true,
+      "details": "Order items: 1"
+    },
+    {
+      "step": 15,
+      "name": "Order cancellation",
+      "passed": true,
+      "details": "Status: CANCELLED"
+    },
+    {
+      "step": 16,
+      "name": "Stock restoration after cancellation",
+      "passed": true,
+      "details": "Stock restored back to 58"
+    },
+    {
+      "step": 17,
+      "name": "Customer personal segmentation (/my-segment)",
+      "passed": true,
+      "details": "Segment: Non-Purchasing / Inactive Leads"
+    },
+    {
+      "step": 18,
+      "name": "Personalized recommendations (/for-me)",
+      "passed": true,
+      "details": "Items count: 2"
+    }
+  ],
+  "phase3_vendor": [
+    {
+      "step": 1,
+      "name": "Vendor registration",
+      "passed": true,
+      "details": "Registered vendor: Innovate Tech Retail"
+    },
+    {
+      "step": 2,
+      "name": "Vendor login (pending)",
+      "passed": true,
+      "details": "Logged in while pending approval"
+    },
+    {
+      "step": 3,
+      "name": "Pending onboarding status",
+      "passed": true,
+      "details": "Status: PENDING"
+    },
+    {
+      "step": 4,
+      "name": "Admin vendor approval",
+      "passed": true,
+      "details": "Vendor f37c62c2-e72f-402f-b945-b288dfa43921 approved"
+    },
+    {
+      "step": 5,
+      "name": "Access vendor dashboard / approved status",
+      "passed": true,
+      "details": "Status is now APPROVED"
+    },
+    {
+      "step": 6,
+      "name": "Vendor profile viewing and editing",
+      "passed": true,
+      "details": "Updated business description"
+    },
+    {
+      "step": 7,
+      "name": "Product creation",
+      "passed": true,
+      "details": "Product created with id edf32356-652c-456a-945c-d05846bea8fc"
+    },
+    {
+      "step": 8,
+      "name": "Product editing and publishing",
+      "passed": true,
+      "details": "Price updated to 4799.00"
+    },
+    {
+      "step": 9,
+      "name": "Inventory configuration (reorder level, cost price & lead time)",
+      "passed": true,
+      "details": "Reorder level configured to 15, cost price to 2500.00"
+    },
+    {
+      "step": 10,
+      "name": "Stock adjustments (PURCHASE_RESTOCK +10)",
+      "passed": true,
+      "details": "New stock: 60"
+    },
+    {
+      "step": 11,
+      "name": "Stock movement history",
+      "passed": true,
+      "details": "Ledger movements recorded: 2"
+    },
+    {
+      "step": 12,
+      "name": "Low stock alerts",
+      "passed": true,
+      "details": "Alerts items count: 1"
+    },
+    {
+      "step": 13,
+      "name": "Replenishment recommendations",
+      "passed": true,
+      "details": "Replenishment items count: 2"
+    },
+    {
+      "step": 14,
+      "name": "Inventory turnover and forecasting",
+      "passed": true,
+      "details": "Forecast horizon: 14 days"
+    },
+    {
+      "step": 15,
+      "name": "Vendor isolation (Vendor B blocked from Vendor A)",
+      "passed": true,
+      "details": "Status: 404"
+    }
+  ],
+  "phase4_admin": [
+    {
+      "step": 1,
+      "name": "Admin login",
+      "passed": true,
+      "details": "Token obtained for admin platform_admin@shopsense.internal"
+    },
+    {
+      "step": 2,
+      "name": "Admin dashboard access & summary",
+      "passed": true,
+      "details": "Total products: 2"
+    },
+    {
+      "step": 4,
+      "name": "Vendor registry management",
+      "passed": true,
+      "details": "Total vendors listed: 2"
+    },
+    {
+      "step": 5,
+      "name": "Marketplace product management",
+      "passed": true,
+      "details": "Managed products: 2"
+    },
+    {
+      "step": 6,
+      "name": "Order management",
+      "passed": true,
+      "details": "Admin viewed order a0a70783-fc69-4025-9df0-9ae2928124c0"
+    },
+    {
+      "step": 7,
+      "name": "Platform sales analytics / turnover",
+      "passed": true,
+      "details": "Turnover ratio: None"
+    },
+    {
+      "step": 8,
+      "name": "Platform inventory valuation",
+      "passed": true,
+      "details": "Valuation status: COMPLETE, Cost coverage: 100.0%"
+    },
+    {
+      "step": 9,
+      "name": "Platform low-stock alerts & replenishment",
+      "passed": true,
+      "details": "Queried platform-wide replenishment"
+    },
+    {
+      "step": 10,
+      "name": "Platform stock movement audit ledger",
+      "passed": true,
+      "details": "Total audit ledger movements: 5"
+    },
+    {
+      "step": 11,
+      "name": "Customer RFM analytics",
+      "passed": true,
+      "details": "RFM items: 1"
+    },
+    {
+      "step": 12,
+      "name": "Customer segmentation",
+      "passed": true,
+      "details": "Segments count: 1"
+    },
+    {
+      "step": 13,
+      "name": "Recommendation engine diagnostics (evaluation)",
+      "passed": true,
+      "details": "Evaluation status: 200, k=5"
+    }
+  ],
+  "phase6_consistency": [
+    {
+      "step": 1,
+      "name": "CHECKOUT_DECREMENT ledger entry exists",
+      "passed": true,
+      "details": "Movement change: -3"
+    },
+    {
+      "step": 2,
+      "name": "CANCELLATION_RESTOCK ledger entry exists",
+      "passed": true,
+      "details": "Movement change: 3"
+    },
+    {
+      "step": 3,
+      "name": "Duplicate cancellation rejected (idempotency guard)",
+      "passed": true,
+      "details": "Duplicate cancel status: 400"
+    },
+    {
+      "step": 4,
+      "name": "No duplicate stock restock occurred",
+      "passed": true,
+      "details": "Stock remains accurate: 58"
+    }
+  ],
+  "phase7_security": [
+    {
+      "step": 1,
+      "name": "Unauthenticated request returns 401",
+      "passed": true,
+      "details": "Status: 401"
+    },
+    {
+      "step": 2,
+      "name": "Invalid token returns 401",
+      "passed": true,
+      "details": "Status: 401"
+    },
+    {
+      "step": 3,
+      "name": "Customer accessing admin endpoint returns 403",
+      "passed": true,
+      "details": "Status: 403"
+    },
+    {
+      "step": 4,
+      "name": "Customer accessing vendor endpoint returns 403",
+      "passed": true,
+      "details": "Status: 403"
+    },
+    {
+      "step": 5,
+      "name": "Vendor accessing admin endpoint returns 403",
+      "passed": true,
+      "details": "Status: 403"
+    }
+  ]
+}

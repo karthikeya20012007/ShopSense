@@ -8,14 +8,14 @@ from backend.app.models.enums import VendorStatus
 class VendorRegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8, description="Password must be at least 8 characters")
-    full_name: str = Field(..., min_length=2, max_length=255)
-    store_name: str = Field(..., min_length=2, max_length=255)
+    full_name: str = Field(..., min_length=2, max_length=255, alias='contact_name')
+    store_name: str = Field(..., min_length=2, max_length=255, alias='company_name')
     business_email: Optional[EmailStr] = None
     business_phone: Optional[str] = Field(None, max_length=50)
     business_address: Optional[str] = None
     business_description: Optional[str] = None
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="ignore", populate_by_name=True)
 
     @field_validator("business_email", "business_phone", "business_address", "business_description", mode="before")
     @classmethod

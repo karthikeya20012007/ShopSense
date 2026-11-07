@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <linearGradient id="eslBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#f1f5f9"/>
+    </linearGradient>
+    <filter id="eslShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <rect width="400" height="300" fill="url(#eslBg)"/>
+
+  <!-- Metal Retail Shelf Mounting Rail -->
+  <rect x="20" y="50" width="360" height="20" fill="#64748b" filter="url(#eslShadow)"/>
+  <rect x="20" y="66" width="360" height="4" fill="#334155"/>
+  <rect x="20" y="52" width="360" height="2" fill="#94a3b8"/>
+
+  <!-- Shelf Bracket Clip -->
+  <path d="M175 48 h50 v25 h-50 z" fill="#475569"/>
+
+  <!-- 4.2" E-Paper Display Bezel Enclosure -->
+  <rect x="80" y="65" width="240" height="160" rx="8" fill="#1e293b" stroke="#cbd5e1" stroke-width="2" filter="url(#eslShadow)"/>
+
+  <!-- Active E-Ink Paper Matrix (High Contrast White) -->
+  <rect x="92" y="77" width="216" height="136" rx="4" fill="#ffffff"/>
+
+  <!-- Tri-Color E-Paper Display Content (Commercial Retail Layout) -->
+  <!-- Product Category / Brand Line -->
+  <text x="106" y="104" font-family="system-ui,sans-serif" font-size="11" font-weight="700" fill="#64748b" letter-spacing="0.5">ORGANIC PANTRY</text>
+  
+  <!-- Product Title -->
+  <text x="106" y="122" font-family="system-ui,sans-serif" font-size="14" font-weight="800" fill="#0f172a">Premium Roast Coffee 500g</text>
+
+  <!-- SKU & Unit Pricing -->
+  <text x="106" y="140" font-family="monospace" font-size="9" font-weight="600" fill="#64748b">SKU: ESL-42-RED | ₹499/100g</text>
+
+  <!-- Prominent Tri-Color Red Promotional Price Tag -->
+  <text x="106" y="195" font-family="system-ui,sans-serif" font-size="36" font-weight="900" fill="#dc2626">₹2,499</text>
+  <text x="215" y="172" font-family="system-ui,sans-serif" font-size="12" font-weight="700" text-decoration="line-through" fill="#94a3b8">₹2,999</text>
+  <rect x="215" y="180" width="38" height="14" rx="2" fill="#dc2626"/>
+  <text x="234" y="190" font-family="system-ui,sans-serif" font-size="8" font-weight="800" fill="#ffffff" text-anchor="middle">SAVE 17%</text>
+
+  <!-- High-Density E-Paper QR/Barcode Matrix -->
+  <g transform="translate(258, 140)">
+    <rect x="0" y="0" width="42" height="42" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <!-- Simulated 2D DataMatrix code -->
+    <rect x="4" y="4" width="8" height="8" fill="#0f172a"/>
+    <rect x="16" y="4" width="4" height="4" fill="#0f172a"/>
+    <rect x="26" y="4" width="12" height="8" fill="#0f172a"/>
+    <rect x="4" y="16" width="12" height="4" fill="#0f172a"/>
+    <rect x="20" y="16" width="8" height="8" fill="#0f172a"/>
+    <rect x="32" y="16" width="6" height="4" fill="#0f172a"/>
+    <rect x="4" y="24" width="8" height="14" fill="#0f172a"/>
+    <rect x="16" y="28" width="8" height="10" fill="#0f172a"/>
+    <rect x="28" y="24" width="10" height="14" fill="#0f172a"/>
+  </g>
+
+  <!-- Wireless Link Pulse & Low-Power Battery Icon -->
+  <circle cx="295" cy="95" r="4" fill="#10b981"/>
+  <rect x="272" y="90" width="14" height="8" rx="1.5" fill="none" stroke="#64748b" stroke-width="1.5"/>
+  <rect x="286" y="92" width="2" height="4" fill="#64748b"/>
+  <rect x="274" y="92" width="9" height="4" fill="#10b981"/>
+
+  <!-- Title / Specification -->
+  <text x="200" y="278" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="#334155" text-anchor="middle">4.2" Dynamic Tri-Color E-Paper Shelf Label</text>
+</svg>

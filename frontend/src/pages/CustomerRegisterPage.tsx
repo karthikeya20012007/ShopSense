@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { apiClient } from '../api/client';
 import { parseApiError } from '../api/errors';
+import { Card, CardContent } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
 
 export const CustomerRegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -101,168 +104,135 @@ export const CustomerRegisterPage: React.FC = () => {
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
-      <div className="max-w-md w-full space-y-6 bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Create Customer Account</h2>
-          <p className="mt-1 text-xs text-slate-500">
-            Sign up to browse, track orders, and interact with the catalog
-          </p>
-        </div>
+      <div className="max-w-md w-full space-y-6">
+        <Card className="border-slate-200/80 shadow-md">
+          <CardContent className="p-8 sm:p-10 space-y-6">
+            <div className="text-center space-y-2">
+              <div className="w-12 h-12 bg-sky-600 rounded-2xl flex items-center justify-center text-white text-2xl font-black mx-auto shadow-md shadow-sky-600/20">
+                S
+              </div>
+              <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Create Customer Account</h2>
+              <p className="text-xs text-slate-500">
+                Sign up to browse, track orders, and interact with the catalog
+              </p>
+            </div>
 
-        {error && (
-          <div
-            role="alert"
-            className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-lg text-xs font-medium space-y-1"
-          >
-            <div>{error}</div>
-            {isDuplicateEmail && (
-              <div className="pt-1 text-rose-800">
-                Already registered?{' '}
-                <Link to="/login" className="font-semibold underline hover:text-rose-950">
-                  Sign in to your account
-                </Link>
+            {error && (
+              <div
+                role="alert"
+                className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl text-xs font-medium space-y-1"
+              >
+                <div>{error}</div>
+                {isDuplicateEmail && (
+                  <div className="pt-1 text-rose-800">
+                    Already registered?{' '}
+                    <Link to="/login" className="font-semibold underline hover:text-rose-950">
+                      Sign in to your account
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
-          </div>
-        )}
 
-        <form id="customer-register-form" onSubmit={handleSubmit} className="space-y-4" noValidate>
-          <div>
-            <label htmlFor="customer-fullname" className="block text-xs font-semibold text-slate-700 mb-1">
-              Full Name <span className="text-rose-500">*</span>
-            </label>
-            <input
-              id="customer-fullname"
-              type="text"
-              name="full_name"
-              autoComplete="name"
-              required
-              value={formData.full_name}
-              onChange={handleChange}
-              placeholder="Alice Johnson"
-              className={`w-full px-3.5 py-2 text-sm rounded-lg border focus:outline-none text-slate-900 bg-white ${
-                fieldErrors.full_name
-                  ? 'border-rose-400 focus:ring-2 focus:ring-rose-500'
-                  : 'border-slate-300 focus:ring-2 focus:ring-sky-500'
-              }`}
-            />
-            {fieldErrors.full_name && (
-              <p className="mt-1 text-xs text-rose-600 font-medium">{fieldErrors.full_name}</p>
-            )}
-          </div>
+            <form id="customer-register-form" onSubmit={handleSubmit} className="space-y-4" noValidate>
+              <Input
+                label="Full Name *"
+                id="customer-fullname"
+                type="text"
+                name="full_name"
+                autoComplete="name"
+                required
+                value={formData.full_name}
+                onChange={handleChange}
+                placeholder="Alice Johnson"
+                error={fieldErrors.full_name}
+              />
 
-          <div>
-            <label htmlFor="customer-email" className="block text-xs font-semibold text-slate-700 mb-1">
-              Email Address <span className="text-rose-500">*</span>
-            </label>
-            <input
-              id="customer-email"
-              type="email"
-              name="email"
-              autoComplete="email"
-              required
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="alice@example.com"
-              className={`w-full px-3.5 py-2 text-sm rounded-lg border focus:outline-none text-slate-900 bg-white ${
-                fieldErrors.email
-                  ? 'border-rose-400 focus:ring-2 focus:ring-rose-500'
-                  : 'border-slate-300 focus:ring-2 focus:ring-sky-500'
-              }`}
-            />
-            {fieldErrors.email && (
-              <p className="mt-1 text-xs text-rose-600 font-medium">{fieldErrors.email}</p>
-            )}
-          </div>
+              <Input
+                label="Email Address *"
+                id="customer-email"
+                type="email"
+                name="email"
+                autoComplete="email"
+                required
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="alice@example.com"
+                error={fieldErrors.email}
+              />
 
-          <div>
-            <label htmlFor="customer-password" className="block text-xs font-semibold text-slate-700 mb-1">
-              Password (min. 8 characters) <span className="text-rose-500">*</span>
-            </label>
-            <input
-              id="customer-password"
-              type="password"
-              name="password"
-              autoComplete="new-password"
-              required
-              minLength={8}
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="••••••••"
-              className={`w-full px-3.5 py-2 text-sm rounded-lg border focus:outline-none text-slate-900 bg-white ${
-                fieldErrors.password
-                  ? 'border-rose-400 focus:ring-2 focus:ring-rose-500'
-                  : 'border-slate-300 focus:ring-2 focus:ring-sky-500'
-              }`}
-            />
-            {fieldErrors.password && (
-              <p className="mt-1 text-xs text-rose-600 font-medium">{fieldErrors.password}</p>
-            )}
-          </div>
+              <Input
+                label="Password (min. 8 characters) *"
+                id="customer-password"
+                type="password"
+                name="password"
+                autoComplete="new-password"
+                required
+                minLength={8}
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                error={fieldErrors.password}
+              />
 
-          <div>
-            <label htmlFor="customer-phone" className="block text-xs font-semibold text-slate-700 mb-1">
-              Contact Phone (Optional)
-            </label>
-            <input
-              id="customer-phone"
-              type="tel"
-              name="phone_number"
-              autoComplete="tel"
-              value={formData.phone_number}
-              onChange={handleChange}
-              placeholder="+1 (555) 012-3456"
-              className={`w-full px-3.5 py-2 text-sm rounded-lg border focus:outline-none text-slate-900 bg-white ${
-                fieldErrors.phone_number
-                  ? 'border-rose-400 focus:ring-2 focus:ring-rose-500'
-                  : 'border-slate-300 focus:ring-2 focus:ring-sky-500'
-              }`}
-            />
-            {fieldErrors.phone_number && (
-              <p className="mt-1 text-xs text-rose-600 font-medium">{fieldErrors.phone_number}</p>
-            )}
-          </div>
+              <Input
+                label="Contact Phone (Optional)"
+                id="customer-phone"
+                type="tel"
+                name="phone_number"
+                autoComplete="tel"
+                value={formData.phone_number}
+                onChange={handleChange}
+                placeholder="+1 (555) 012-3456"
+                error={fieldErrors.phone_number}
+              />
 
-          <div>
-            <label htmlFor="customer-address" className="block text-xs font-semibold text-slate-700 mb-1">
-              Shipping Address (Optional)
-            </label>
-            <textarea
-              id="customer-address"
-              name="shipping_address"
-              autoComplete="street-address"
-              rows={2}
-              value={formData.shipping_address}
-              onChange={handleChange}
-              placeholder="123 Shopping Way, City, State, ZIP"
-              className={`w-full px-3.5 py-2 text-sm rounded-lg border focus:outline-none text-slate-900 bg-white ${
-                fieldErrors.shipping_address
-                  ? 'border-rose-400 focus:ring-2 focus:ring-rose-500'
-                  : 'border-slate-300 focus:ring-2 focus:ring-sky-500'
-              }`}
-            />
-            {fieldErrors.shipping_address && (
-              <p className="mt-1 text-xs text-rose-600 font-medium">{fieldErrors.shipping_address}</p>
-            )}
-          </div>
+              <div>
+                <label htmlFor="customer-address" className="block text-xs font-semibold text-slate-700 mb-1">
+                  Shipping Address (Optional)
+                </label>
+                <textarea
+                  id="customer-address"
+                  name="shipping_address"
+                  autoComplete="street-address"
+                  rows={2}
+                  value={formData.shipping_address}
+                  onChange={handleChange}
+                  placeholder="123 Shopping Way, City, State, ZIP"
+                  className={`w-full px-3.5 py-2 text-sm rounded-lg border focus:outline-none text-slate-900 bg-white ${
+                    fieldErrors.shipping_address
+                      ? 'border-rose-400 focus:ring-2 focus:ring-rose-500'
+                      : 'border-slate-300 focus:ring-2 focus:ring-sky-500'
+                  }`}
+                />
+                {fieldErrors.shipping_address && (
+                  <p className="mt-1 text-xs text-rose-600 font-medium">{fieldErrors.shipping_address}</p>
+                )}
+              </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2.5 px-4 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-semibold text-sm transition-colors shadow-sm disabled:opacity-50"
-          >
-            {loading ? 'Creating Account...' : 'Complete Customer Registration'}
-          </button>
-        </form>
+              <div className="pt-2">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="w-full py-2.5"
+                  disabled={loading}
+                  isLoading={loading}
+                >
+                  Complete Customer Registration
+                </Button>
+              </div>
+            </form>
 
-        <div className="pt-3 border-t border-slate-100 text-center">
-          <p className="text-xs text-slate-500">
-            Already registered?{' '}
-            <Link to="/login" className="font-semibold text-sky-600 hover:underline">
-              Sign In
-            </Link>
-          </p>
-        </div>
+            <div className="pt-3 border-t border-slate-100 text-center">
+              <p className="text-xs text-slate-500">
+                Already registered?{' '}
+                <Link to="/login" className="font-semibold text-sky-600 hover:text-sky-700 hover:underline">
+                  Sign In
+                </Link>
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

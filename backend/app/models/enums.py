@@ -38,3 +38,16 @@ class OrderStatus(str, enum.Enum):
 
 # Explicit set of order statuses that contribute to recognized revenue in analytics.
 REVENUE_RECOGNIZED_ORDER_STATUSES: frozenset[OrderStatus] = frozenset({OrderStatus.COMPLETED})
+
+
+class StockMovementType(str, enum.Enum):
+    """
+    Inventory stock movement types for audit trail and tracking.
+    """
+    CHECKOUT_DECREMENT = "CHECKOUT_DECREMENT"
+    CANCELLATION_RESTOCK = "CANCELLATION_RESTOCK"
+    PURCHASE_RESTOCK = "PURCHASE_RESTOCK"
+    MANUAL_ADJUSTMENT = "MANUAL_ADJUSTMENT"
+    WAREHOUSE_TRANSFER = "WAREHOUSE_TRANSFER"
+    SHRINKAGE = "SHRINKAGE"
+

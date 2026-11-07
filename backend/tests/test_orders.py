@@ -535,7 +535,12 @@ def test_alembic_migration_linear_history():
     heads = script.get_heads()
     assert len(heads) == 1, f"Expected exactly 1 migration head, found: {heads}"
     head_rev = heads[0]
-    assert head_rev == "c746127dd814"
+    assert head_rev == "5474c90b925d"
+
+    # Verify Milestone 2 Phase 1 revision details
+    m2_rev = script.get_revision("5474c90b925d")
+    assert m2_rev is not None
+    assert m2_rev.down_revision == "c746127dd814"
 
     # Verify Step 2 constraint revision details
     check_rev = script.get_revision("c746127dd814")

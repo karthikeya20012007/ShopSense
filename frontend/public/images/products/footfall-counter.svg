@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <linearGradient id="ffBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#f1f5f9"/>
+    </linearGradient>
+    <linearGradient id="coneGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#0284c7" stop-opacity="0.02"/>
+    </linearGradient>
+    <filter id="ffShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <rect width="400" height="300" fill="url(#ffBg)"/>
+
+  <!-- Ceiling Mounting Plate & Bracket -->
+  <rect x="140" y="25" width="120" height="12" rx="3" fill="#64748b" filter="url(#ffShadow)"/>
+  <rect x="185" y="37" width="30" height="20" fill="#334155"/>
+
+  <!-- AI Stereoscopic Camera Housing Unit -->
+  <rect x="100" y="55" width="200" height="75" rx="14" fill="#0f172a" stroke="#cbd5e1" stroke-width="2" filter="url(#ffShadow)"/>
+  <rect x="110" y="65" width="180" height="55" rx="10" fill="#1e293b"/>
+
+  <!-- Stereoscopic Dual Vision Lenses (Left & Right 3D Depth) -->
+  <!-- Left Lens -->
+  <circle cx="150" cy="92" r="20" fill="#0f172a" stroke="#38bdf8" stroke-width="3"/>
+  <circle cx="150" cy="92" r="10" fill="#0284c7"/>
+  <circle cx="147" cy="89" r="3" fill="#ffffff"/>
+
+  <!-- Center IR Projector Array -->
+  <rect x="185" y="86" width="30" height="12" rx="4" fill="#0f172a"/>
+  <circle cx="193" cy="92" r="2.5" fill="#ef4444"/>
+  <circle cx="200" cy="92" r="2.5" fill="#ef4444"/>
+  <circle cx="207" cy="92" r="2.5" fill="#ef4444"/>
+
+  <!-- Right Lens -->
+  <circle cx="250" cy="92" r="20" fill="#0f172a" stroke="#38bdf8" stroke-width="3"/>
+  <circle cx="250" cy="92" r="10" fill="#0284c7"/>
+  <circle cx="247" cy="89" r="3" fill="#ffffff"/>
+
+  <!-- Downward Optical 3D Sensing Field Cone -->
+  <polygon points="120,130 50,245 350,245 280,130" fill="url(#coneGrad)"/>
+  
+  <!-- Heatmap / Tracking Grid on Floor -->
+  <ellipse cx="200" cy="235" rx="110" ry="20" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-dasharray="6,4"/>
+  <ellipse cx="200" cy="235" rx="70" ry="12" fill="none" stroke="#38bdf8" stroke-width="2"/>
+  
+  <!-- Tracked Customer Footfall Points -->
+  <circle cx="170" cy="233" r="5" fill="#10b981"/>
+  <circle cx="170" cy="233" r="12" fill="none" stroke="#10b981" stroke-width="1.5" stroke-dasharray="3,2"/>
+
+  <circle cx="230" cy="235" r="5" fill="#3b82f6"/>
+  <circle cx="230" cy="235" r="12" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="3,2"/>
+
+  <!-- Title / Specification -->
+  <text x="200" y="278" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="#334155" text-anchor="middle">3D Stereoscopic AI Overhead Traffic Counter</text>
+</svg>

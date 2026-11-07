@@ -43,7 +43,12 @@ class ProductResponse(BaseModel):
     is_published: bool
     created_at: datetime
     store_name: Optional[str] = None
-
+    # Inventory fields
+    cost_price: Optional[Decimal] = None
+    reorder_level: Optional[int] = None
+    safety_stock: Optional[int] = None
+    lead_time_days: Optional[int] = None
+    category_id: Optional[uuid.UUID] = None
     model_config = ConfigDict(from_attributes=True)
 
 

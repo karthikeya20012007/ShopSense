@@ -1,13 +1,15 @@
 import uuid
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from backend.app.models.enums import UserRole, AccountStatus, VendorStatus
 
 
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=1)
+    
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class RefreshRequest(BaseModel):
